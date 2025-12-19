@@ -4,20 +4,112 @@
 
 \begin{document}
 \chapter{Allineamento multiplo di sequenze}
-\section{Introduzione}
-Per ottenere informazioni su una sequenza genomica, 
-questa viene sottoposta a un processo di analisi di sequenza, 
-che può assumere forme diverse a seconda dell’origine della sequenza 
-e degli obiettivi dello studio. La progettazione di metodi per il confronto delle sequenze è complessa a causa di numerose difficoltà, tra cui mutazioni puntiformi, variazioni di lunghezza, cambiamenti drastici, mascheramento e altri eventi evolutivi.
-Per superare tali difficoltà, il passaggio cruciale è l’allineamento delle sequenze, una tecnica fondamentale alla base di molti strumenti software utilizzati nella ricerca nei database biologici. L’allineamento consente di confrontare sequenze anche quando non sono identiche, permettendo di evidenziare regioni conservate nonostante la divergenza evolutiva.
-A causa delle mutazioni, anche le sequenze dello stesso gene o della stessa proteina in specie strettamente correlate sono raramente identiche. Il confronto tra sequenze è quindi essenziale per inferire l’omologia, ossia la derivazione da un antenato comune. Idealmente, l’obiettivo del confronto è allineare le sequenze in modo che basi o amminoacidi derivati dalla stessa posizione ancestrale risultino in corrispondenza. In assenza di informazioni aggiuntive, ciò si ottiene massimizzando la somiglianza tra le sequenze allineate.
-Quando le sequenze sono molto simili, l’allineamento è semplice e le regioni identiche risultano chiaramente visibili. Tuttavia, quando le sequenze sono più divergenti, ad esempio a causa di inserzioni o delezioni, un confronto diretto può nascondere la reale somiglianza e generare corrispondenze false tra posizioni non equivalenti. Per ovviare a questo problema, si introducono gap (spazi vuoti) in una o entrambe le sequenze, così da preservare il maggior numero possibile di corrispondenze significative.
-Poiché per una stessa coppia di sequenze esistono molti allineamenti possibili, non è sempre immediato individuare quello migliore, soprattutto quando il livello di somiglianza è basso. Per questo motivo, i metodi di confronto delle sequenze utilizzano algoritmi basati su schemi di punteggio quantitativi, che valutano la qualità degli allineamenti e scartano quelli non soddisfacenti secondo criteri prestabiliti.
-Nel confronto tra sequenze biologiche, la questione fondamentale è stabilire se le somiglianze osservate siano dovute al caso oppure riflettano una relazione evolutiva, cioè una omologia. I termini similarità e omologia non sono equivalenti: la similarità indica semplicemente il grado di somiglianza tra sequenze, mentre l’omologia implica una discendenza comune e ha quindi un preciso significato evolutivo e biologico.
-I geni o le proteine omologhe derivano da un antenato comune e divergono nel tempo a causa dell’accumulo di mutazioni. Spesso l’omologia suggerisce anche una struttura o funzione simile, poiché la selezione naturale tende a conservare mutazioni che mantengono la funzione e la stabilità strutturale delle proteine. Tuttavia, residui identici o simili possono riflettere solo una divergenza evolutiva recente e non essere necessariamente essenziali per la funzione.
-Inoltre, un’elevata similarità di sequenza non garantisce sempre una funzione comune, poiché nuove funzioni possono emergere con modifiche minime della sequenza. Al contrario, proteine con bassa similarità di sequenza possono conservare la stessa struttura tridimensionale e la stessa funzione. In questi casi sono necessarie informazioni aggiuntive, come dati strutturali o biochimici.
-Esistono anche casi di evoluzione convergente, in cui sequenze simili non sono omologhe ma hanno acquisito somiglianze indipendentemente per svolgere una funzione analoga. Tuttavia, questo processo raramente produce lunghe regioni altamente simili.
-Un allineamento di sequenze rappresenta quindi una ipotesi evolutiva su quali residui derivino dallo stesso antenato, ma da solo non consente di distinguere tra omologia ed evoluzione convergente. Per questo motivo, i metodi di confronto delle sequenze devono tenere conto dei meccanismi evolutivi, delle proprietà chimico-fisiche degli amminoacidi e delle pressioni selettive, al fine di distinguere allineamenti casuali da quelli che riflettono una reale relazione evolutiva.
+\section{Contesto Generale e nascita sequence analysis}
+La rivoluzione nell'analisi genetica, iniziata negli anni 70 con lo
+sviluppo della tecnologia del DNA ricombinate e delle tecniche di 
+sequenziamento, ha portato alla disponibilità di un'enorme quantità di dati
+biologici. Oggi esistono vasti database contenenti sequenze di nucleotidi e
+amminoacidi provenienti da una varietà di organismi. Nonostante questa abbondanza d'informazioni
+di sequenza, per una larga frazione dei geni e delle proteine annotate
+non sono note nè la struttura tridimensionale nè la funzione biologica.
+Questo ha portato alla nascita di un nuovo campo di ricerca, noto come
+sequence analysis, che si occupa di sviluppare metodi computazionali per
+l'analisi delle sequenze biologiche al fine di inferire informazioni strutturali
+e funzionali. La sequence analysis includono diverse fasi a seconda dell'origine
+della sequenza e degli obiettivi dell'analisi. Tra queste fasi, una delle più importanti
+e ricorrenti è \textbf{l'allineamento di sequenze}, utilizzato per individuare omologie e per confrontare
+sequenze nuove con quelle già presenti nei database.
+
+\section{Ruolo dell'Allineamento di sequenze}
+L'allineamento di sequenze è un passaggio chiave sia per: il confronto 
+diretto tra due o più sequenze; sia per il database searching, ovvero 
+la ricerca di sequenze simili in grandi archivi biologici.
+L'identificazione di sequenze simili ha numerose applicazioni:
+\begin{itemize}
+    \item Permette di riconoscere geni codificanti all'interno di sequenze genomiche grezze 
+    \item Consente di assegnare una funzione putativa a un gene tramite il confronto con geni già caratterizzati
+    \item Fornisce indicazioni sulla struttura tridimensionale delle proteine 
+\end{itemize}
+
+\section{Concetto di Allineamento e introduzione dei Gap }
+L'allineamento di sequenze consiste nel disporre due o più sequenze in modo tale che le residui 
+derivati da uno stesso residuo ancestrale occupino la stessa posizione. Questo obiettivo viene 
+generalmente preseguito massimizzando la similarità complessiva dell'allineamento. Quando le
+sequenze differiscono in lunghezza, un allineamento diretto produce:
+\begin{itemize}
+    \item Posizioni in cui i residui non corrispondono (mismatches)
+    \item Posizioni in cui una sequenza ha residui aggiuntivi rispetto all'altra (inserzioni o delezioni, note come indels)
+\end{itemize}
+L'introduzione di \textbf{gap} che rappresentano insezioni o delezioni evolutive, consente di migliorare l'allineamento tra le sequenze.
+Tuttavia non esistono regole rigide per l'inserimento dei gap, e la loro gestione rappresenta una sfida significativa nell'allineamento di sequenze.
+Per questo motivo, gli algoritmi di allineamento devono :
+\begin{itemize}
+    \item generare possibili allineamenti
+    \item assegnare a ciascuno un punteggio quantitativo
+    \item scartare quelli non significarivi in base a criteri statistici 
+\end{itemize}
+
+\section{Similarità a Confronto con omologia}
+Un punto concettuale fondamentale è la distinzione tra similarità e omologia.
+La Similarità è un termine desccrittivo che indica un certo grado di corrispondenza tra sequenze; 
+L'omologia implica invece una relziione evolutiva, ovvero la derivazione da un antenato comune
+Due sequenze omologhe possono aver divergenze significative a livello di sequenza, pur mantenendo :
+\begin{itemize}
+    \item una struttura tridimensionale simile
+    \item una funzione biologica analoga
+\end{itemize}
+Tuttavia: un elevata similarità tra sequenze non garantisce necessariamente un'origine evolutiva comune; ed una bassa
+similarità non esclude l'omologia. Esistono anche casi di evoluzione convergente, in cui sequenze non omologhe
+mostrano somiglianze locali dovute a vincoli funzionali simili. In tali casi, la similarità 
+non riflette una comune origine evolutiva. Un allineamento deve quindi essere interpretato come una 
+ipotesi sulle corrispondenze evolutive tra residui, non come una dimostrazione definitiva di omologia.
+Esistono anche casi di \textbf{evoluzione convergente}, in cui sequenze non omologhe
+mostrano somiglianze locali dovute a vincoli funzionali simili. In tali casi, la similarità 
+non riflette una comune origine evolutiva. Un allineamento deve quindi essere interpretato come una 
+ipotesi sulle corrispondenze evolutive tra residui, non come una dimostrazione definitiva di omologia.
+
+\section{Modelli evolutivi, scoring e algoritmi}
+I metodi computazioni di confronto delle sequenze devono tenere conto di :
+\begin{itemize}
+    \item diversi tipi di mutazione
+    \item proprietà fisico-chimiche degli amminoacidi
+    \item pressioni selettive che favoliscono o eliminano determinate variazioni
+\end{itemize}
+Questi fattori vengono incorporati in :
+\begin{itemize}
+    \item \textbf{schemi di scoring} che assegnano punteggi a matches, mismatches e gap
+    \item \textbf{algoritmi di allineamento} che cercano di ottimizzare il punteggio complessivo 
+
+\end{itemize}
+Infine, è essenziale distiguere tra 
+\begin{itemize}
+    \item allineamenti apparentemente buoni ma dovuti al caso
+    \item allinemaneti che riflettono una relazione evolutiva reale, utilizzando criteri statici adeguati.
+\end{itemize}
+
+\section{Limiti della percent identity come misura di similarità}
+La \textbf{percentuale d'identità} rappresenta la misura più semplce e 
+immediata della quantità di un allineamento, in quanto si ottiene 
+semplicemente calcolando la frazione di posizioni allineate in cui 
+i residui sono identici. Sebbene questa misura sia utile come 
+\textbf{test preliminare rapido}, essa risulta concettualmente grossolana
+e insufficiente a descrivere in modo accurato il grado reale di somiglianza
+biologica tra due sequenze, in particolare nel caso delle \textbf{sequenze proteiche}
+Il principale limite della percent identity risiede nel fatto che essa assegna un valore
+binario alle posizioni allineate:
+\begin{itemize}
+    \item \textbf{1} per un match identico 
+    \item \textbf{0} per un mismatches
+\end{itemize}
+Questo approccio ignora completamente la natura chimica e fisica degli
+amminoacidi coinvolti, trattando allo stesso modo sostituizioni biologicamente
+plausibili e sostituzioni estremamente improbabili dal punto di vista evolutivo.
+
+\section{Similarità funzionale tra amminoacidi non identici}
+
+
+
+
 
 \end{document}
 
