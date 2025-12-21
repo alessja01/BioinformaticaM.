@@ -42,3 +42,25 @@ https://github.com/cbcrg/tcoffee
 
 usare github per citare linguaggio C, descrivere modularità, gestione della library, separazione input/scoring/output
 
+
+
+Bibliografia Allineamento Progressivo e T-Coffee:
+
+I "Padri Fondatori" dell'Allineamento Progressivo:
+
+* Feng, D. F., \& Doolittle, R. F. (1987). Progressive sequence alignment as a prerequisite to correct phylogenetic trees. Journal of molecular evolution, 25(4), 351-360.
+* Thompson, J. D., Higgins, D. G., \& Gibson, T. J. (1994). CLUSTAL W: improving the sensitivity of progressive multiple sequence alignment through sequence weighting, position-specific gap penalties and weight matrix choice. Nucleic acids research, 22(22), 4673-4680.
+
+T-Coffee e Consistency-based Alignment:
+
+* Notredame, C., Higgins, D. G., \& Heringa, J. (2000). T-Coffee: A novel method for fast and accurate multiple sequence alignment. Journal of molecular biology, 302(1), 205-217.
+* Notredame, C. (2002). Recent progress in multiple sequence alignment: a survey. Pharmacogenomics, 3(1), 131-144.
+
+Algoritmi per l'Albero Guida e Matrici:
+
+* Saitou, N., \& Nei, M. (1987). The neighbor-joining method: a new method for reconstructing phylogenetic trees. Molecular biology and evolution, 4(4), 406-425.
+* Needleman, S. B., \& Wunsch, C. D. (1970). A general method applicable to the search for similarities in the amino acid sequence of two proteins. Journal of molecular biology, 48(3), 443-453.
+
+Libri di Testo (La "Bibbia" della Bioinformatica):
+
+* Durbin, R., Eddy, S. R., Krogh, A., \& Mitchison, G. (1998). Biological sequence analysis: probabilistic models of proteins and nucleic acids. Cambridge university press.
