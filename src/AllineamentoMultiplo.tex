@@ -1,0 +1,58 @@
+% !TeX root = main.tex
+\section{Allineamento multiplo: quadro concettuale, scelte di scoring e strategia algoritmica}
+L’\textbf{allineamento multiplo di sequenze} (\emph{Multiple Sequence Alignment}, MSA) è uno dei problemi centrali della \emph{sequence analysis}, perché consente di confrontare simultaneamente più sequenze (proteiche o nucleotidiche) per evidenziare \textbf{posizioni conservate}, \textbf{motivi funzionali}, \textbf{domini condivisi} e \textbf{relazioni evolutive}. Rispetto a un allineamento pairwise, l’MSA aumenta l’informazione disponibile: ambiguità che in un confronto a due sequenze resterebbero irrisolte possono essere vincolate dall’evidenza fornita da sequenze addizionali. In pratica, un MSA ben costruito diventa una rappresentazione compatta di un’intera famiglia, utile per annotazione funzionale, analisi filogenetiche e supporto a inferenze strutturali.
+
+Dal punto di vista algoritmico, un allineamento va interpretato come \textbf{ipotesi operativa} sulle corrispondenze tra residui omologhi. Tale ipotesi viene formalizzata tramite una funzione obiettivo: si definisce uno \textbf{schema di scoring} e si ricerca l’allineamento (o la classe di allineamenti) che massimizza tale punteggio. Di conseguenza, la qualità dell’MSA dipende in modo cruciale da due dimensioni:
+(i) \textbf{modello di scoring} (matrici di sostituzione, penalità di gap, parametri);
+(ii) \textbf{strategia di costruzione dell’allineamento} (euristica/procedura: progressive, iterativa, consistency-based, ecc.).
+Il focus metodologico non è quindi ``allineare e basta'', ma progettare una pipeline in cui \textbf{scelte di scoring} e \textbf{scelte algoritmiche} siano coerenti con il problema biologico (omologhi vicini vs distanti, sequenze multidominio, regioni a bassa complessità, ecc.).
+
+\subsection{Scoring: matrici di sostituzione e limiti della percent identity}
+La \textbf{percent identity} è un indicatore rapido ma concettualmente impreciso poichè 
+valuta i match in modo binario (identico/non identico) e non distingue tra sostituzioni improbabili
+e sostituzioni conservative, che invece sono frequenti durante l'evoluzione. Per questo, negli 
+allianementi proteici si usano \textbf{matrici di sostituzione} (20x20) che assegnano punteggi differenziati a ogni coppia di residui 
+sulla base di quanto quella sostituzione è più probabile in posizioni omologhe rispetto al caso.
+Le matrici più comuni sono: \textbf{PAM} e \textbf{BLOSUM}, che differiscono per dati di partenza e obiettivo. Le 
+\textbf{PAM} modellano la divergenza lungo un asse evolutivo: partendo da allineamenti di sequenze 
+molto simili si stimano tassi di mutazione accettata (mutabilità residuo-specifica e probabilità di sostituzione  $M_{a,b}$tramite un processo di Markov) . La matrice 
+\textbf{1- PAM} corrisponde convenzionalmente a una mutazione accettata ogni 100 residui;
+matrici a distanza maggiore es \textbf{PAM120, PAM250} si ottengono elevando la matrice di transizione
+a potenze più alte e trasformando poi le probabilità in punteggi \textbf{log-odds} rispetto a frequenze di background. 
+Le \textbf{BLOSUM} (\textbf{Henikoff & Henikoff}), invece, sono costruite a partire da blocchi locali conservati e sono 
+pensate per catturare segnali di conservazione anche tra sequenze più distanti: le sequenze troppo simili vengono prima 
+raggruppate (clustering sopra una soglia d'identità) per ridurre la sovrarappresentazione, e le sostituzioni vengono 
+contate tra cluster. La soglia \textbf{C} genera matrici diverse (es. \textbf{BLOSUM62, BLOSUM50}) e influenza in modo diretto i punteggi.
+La scelta migliore della matrice è quindi una decisione strategica, perchè determina quali corrispondenze vegono favorite 
+e interagisce anche con la gestione dei gap e la stabilità delle colonne nell'MSA. In generale, matrici adatte a \textbf{divergenze elevate}
+aumentano la sensibilità nel riconoscere omologhi distanti, ma possono 
+rendere l'allineamento più sensibile a rumore e parametri (gap penalties).
+Matrici per \textbf{distanze corte } sono più appropiate per sequenze vicine e aiutano a ridurre match casuali, soprattutto quando i segmenti informativi sono corti.
+
+
+
+\subsection{Gap: modellare indel con penalità plausibili}
+Sequenze omologhe possono differire in lunghezza per eventi di inserzione/delezione (\emph{indel}). L’allineamento introduce quindi \textbf{gap} per rappresentare tali eventi, ma l’inserimento indiscriminato di gap può produrre corrispondenze spurie. Il controllo avviene tramite penalità di gap sottratte allo score. Un modello ampiamente usato è la penalità \textbf{affine}:
+\begin{itemize}
+    \item \textbf{gap opening penalty}: costo per aprire un nuovo gap;
+    \item \textbf{gap extension penalty}: costo per estendere un gap esistente.
+\end{itemize}
+Questo modello riflette un vincolo biologico/strutturale: le indel tendono a comparire come segmenti di più residui, mentre gap singoli isolati sono meno frequenti; l’affine penalty penalizza quindi relativamente di più i gap brevi e frammentati. In alcune implementazioni la penalità può dipendere dal residuo contro cui si allinea il gap, pesando maggiormente gap in posizioni strutturalmente/funzionalmente vincolate.
+
+\subsection{Allineamento pairwise: programmazione dinamica e locale vs globale}
+Il calcolo esatto dell’allineamento ottimo esplorando tutte le possibilità è proibitivo. La soluzione classica è la \textbf{programmazione dinamica} (DP), che calcola l’ottimo rispetto a uno schema di scoring definito. L’algoritmo di \textbf{Needleman--Wunsch} (1970) produce un allineamento \textbf{globale} massimizzando lo score lungo tutta la lunghezza delle sequenze. Per casi in cui solo porzioni sono omologhe (proteine multidominio o domini condivisi), è più appropriato un allineamento \textbf{locale}: l’algoritmo di \textbf{Smith--Waterman} massimizza lo score su segmenti e considera solo allineamenti con score complessivo positivo, risultando fondamentale in database searching e riconoscimento di domini/motivi in presenza di bassa identità globale.
+
+Queste distinzioni (globale/locale) sono essenziali anche per l’MSA: molte famiglie richiedono di ``fissare'' correttamente regioni core (domini catalitici, siti attivi) e trattare con cautela regioni variabili (loop, inserti), evitando di imporre un global match dove biologicamente non esiste.
+\subsection{Multiple sequence alignment: complessità computazionale e metodi euristici}
+L’estensione diretta della DP a $n$ sequenze richiederebbe una matrice $n$-dimensionale, con costo computazionale esplosivo; per questo gli MSA sono costruiti quasi sempre con \textbf{euristiche}. Un paradigma molto diffuso è il metodo \textbf{progressive} (ad albero), adottato da programmi come ClustalW:
+\begin{enumerate}
+    \item si effettuano confronti pairwise per stimare distanze/similarità;
+    \item si costruisce una \textbf{guide tree} (albero guida);
+    \item si allineano progressivamente le sequenze (prima le più simili), quindi si allineano \textbf{profili} (allineamento profilo-profilo) fino a ottenere l’MSA finale.
+\end{enumerate}
+Il punto critico, dal punto di vista algoritmico, è che nel progressive alignment \textbf{gli errori iniziali tendono a propagarsi}: una scelta sub-ottimale in una fase precoce può vincolare negativamente l’allineamento successivo, perché l’algoritmo non ``torna indietro'' a correggere scelte precedenti. Questo limite è una motivazione chiave per strategie più avanzate (iterative e consistency-based), che cercano di aumentare la robustezza dell’MSA riducendo la dipendenza dalla guida iniziale e integrando evidenza multipla (es. vincoli da allineamenti locali/pairwise).
+
+
+\subsection{Filtri di bassa complessità e qualità del dataset}
+Le \textbf{regioni a bassa complessità} (ripetizioni o forte bias composizionale) possono produrre score elevati senza vera omologia, aumentando i falsi positivi e introducendo sequenze spurie nel dataset. Per questo, i motori di ricerca applicano filtri (es. SEG per proteine, DUST per DNA) che mascherano tali regioni durante la ricerca. Questa scelta ha impatto diretto sulla qualità dell’MSA: dataset ``contaminati'' da hit guidati da bassa complessità amplificano rumore e peggiorano la conservazione apparente, rendendo più instabile l’allineamento progressivo e più difficile l’identificazione del core omologo.
+

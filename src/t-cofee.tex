@@ -1,0 +1,52 @@
+\noindent Sebbene l'allineamento progressivo classico, esemplificato dalla famiglia di software Clustal, rappresenti un'euristica efficace per ridurre la complessità computazionale dell'allineamento multiplo (MSA), esso soffre intrinsecamente della natura "greedy" (ingorda) dell'algoritmo. \\
+La limitazione principale risiede nell'impossibilità di correggere gli errori commessi nelle prime fasi della costruzione dell'allineamento: una volta inserito un gap, questo viene propagato irreversibilmente. \\
+Per mitigare questo problema senza abbandonare l'efficienza dello schema progressivo, nel 2000 Notredame, Higgins e Heringa hanno introdotto T-Coffee (Tree-based Consistency Objective Function For alignmEnt Evaluation). T-Coffee non abbandona l'architettura progressiva, ma ne rivoluziona la fase di valutazione: invece di basarsi su matrici di sostituzione statiche (come le serie BLOSUM o PAM), l'algoritmo costruisce una funzione obiettivo dinamica basata sul concetto di consistenza.
+
+\subsection{Consistenza Biologica}
+L'idea fondamentale di T-Coffee è che l'allineamento tra due sequenze, $S_A$ e $S_B$, non debba dipendere esclusivamente dal confronto diretto tra i loro residui, ma debba essere informato dal modo in cui entrambe si allineano con tutte le altre sequenze del set. Se il residuo $x$ della sequenza $A$ è allineato con il residuo $z$ della sequenza $C$, e lo stesso residuo $z$ è allineato con il residuo $y$ della sequenza $B$, allora esiste una "evidenza transitoria" che $x$ e $y$ debbano essere allineati tra loro, anche se il confronto diretto $A-B$ (pairwise) non lo suggerisce fortemente. Questa proprietà transitiva è definita consistenza.
+
+\subsection{L'Algoritmo T-Coffee}
+Il flusso di lavoro di T-Coffee si articola in tre fasi distinte, che precedono e modificano la classica procedura di allineamento progressivo.
+
+\subsubsection{Generazione della Libreria Primaria}
+Invece di calcolare una semplice matrice di distanze, T-Coffee genera una libreria di allineamenti. Per ogni coppia di sequenze, vengono calcolati due tipi di allineamento:
+\begin{itemize}
+    \item Allineamento Globale: Solitamente ottenuto tramite l'algoritmo ClustalW (Needleman-Wunsch).
+    \item Allineamento Locale: Ottenuto tramite l'algoritmo LALIGN (Smith-Waterman), per identificare regioni conservate o domini condivisi anche in presenza di scarsa similarità globale.
+\end{itemize}
+Ogni coppia di residui allineati $(x, y)$ proveniente da questi allineamenti viene inserita nella libreria con un peso iniziale pari alla percentuale di identità dell'allineamento da cui proviene.
+
+\subsubsection{Estensione della Libreria}
+Questa è la fase cruciale che differenzia T-Coffee dagli altri metodi. L'obiettivo è ricalcolare il peso di ogni coppia di residui $(x, y)$ considerando le informazioni fornite da una terza sequenza intermedia $S_Z$. Il peso esteso tra il residuo $x$ della sequenza $A$ e il residuo $y$ della sequenza $B$ è calcolato come:$$W(A_x, B_y) = W_{diretto}(A_x, B_y) + \sum_{Z \neq A,B} \min(W(A_x, Z_k), W(Z_k, B_y))$$ Dove:
+\begin{itemize}
+    \item $W_{diretto}$ è il peso derivato dall'allineamento a coppie iniziale.
+    \item La sommatoria itera su tutte le altre sequenze $Z$ nel dataset.
+    \item Il termine $\min$ rappresenta il "collo di bottiglia" della consistenza: la confidenza dell'allineamento indiretto $A \to Z \to B$ è limitata dall'allineamento più debole nella catena.
+\end{itemize}
+Questo processo trasforma la libreria in una matrice di pesi "consistency-based", dove i segnali di allineamento forti vengono amplificati dal supporto delle altre sequenze, mentre i segnali spuri (rumore) vengono attenuati.
+
+\subsubsection{Allineamento Progressivo}
+Una volta ottenuta la libreria estesa, T-Coffee procede con lo schema progressivo standard:
+\begin{enumerate}
+    \item Calcolo della matrice delle distanze basata sui pesi della libreria.
+    \item Costruzione dell'albero guida (Neighbor-Joining).
+    \item Allineamento progressivo seguendo l'albero.
+\end{enumerate}
+La differenza sostanziale rispetto a Clustal è che, durante l'allineamento di due profili, il punteggio per allineare una colonna del profilo $P_1$ con una colonna del profilo $P_2$ non è dato da una matrice BLOSUM, ma dalla somma dei pesi nella libreria estesa per tutte le coppie di residui coinvolte.
+
+\subsection{Analisi della Complessità Computazionale}
+L'accuratezza superiore di T-Coffee comporta un costo computazionale significativo.Mentre un allineamento progressivo standard ha una complessità temporale di $O(N^2L^2)$, T-Coffee introduce un fattore cubico rispetto al numero delle sequenze a causa della fase di estensione della libreria.La complessità per la fase di estensione, che richiede il confronto di triplette di sequenze, è approssimabile a:$$O(N^3 L)$$Dove $N$ è il numero di sequenze e $L$ la loro lunghezza. Questo rende T-Coffee computazionalmente oneroso per dataset contenenti un elevato numero di sequenze (es. $N > 100-200$), limitandone l'uso a set di dati di dimensioni moderate dove la precisione è prioritaria rispetto alla velocità.
+
+\subsection{Vantaggi e Limitazioni}
+Vantaggi:
+\begin{itemize}
+    \item Accuratezza: T-Coffee è significativamente più accurato di ClustalW e altri metodi puramente progressivi, specialmente quando le sequenze hanno una bassa percentuale di identità (<30%, la cosiddetta "Twilight Zone").
+    \item Flessibilità: Può integrare informazioni eterogenee (es. dati strutturali PDB o profili pre-esistenti) nella libreria iniziale senza modificare l'algoritmo di base.
+\end{itemize}
+Limitazioni:
+\begin{itemize}
+    \item Scalabilità: Il costo $O(N^3)$ e l'elevata richiesta di memoria RAM per memorizzare la libreria lo rendono inadatto per l'allineamento di interi genomi o database massivi. Per ovviare a ciò, sono state sviluppate varianti come M-Coffee (meta-aligner) o versioni parallelizzate.
+\end{itemize}
+
+\subsection{Conclusioni sul Metodo}
+In conclusione, T-Coffee rappresenta l'evoluzione qualitativa dell'allineamento progressivo. Pur mantenendo l'euristica gerarchica necessaria per trattare allineamenti multipli, risolve parzialmente il problema del posizionamento errato dei gap attraverso un pre-processing "consapevole" dell'intero dataset. Esso dimostra che l'informazione contenuta in sequenze intermedie è fondamentale per allineare correttamente sequenze distanti, spostando il focus dall'ottimizzazione locale (pairwise) a quella globale (consistency).

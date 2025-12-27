@@ -1,0 +1,141 @@
+% !TeX root = main.tex
+\section{Fondamenti dello scoring e programmazione dinamica}
+Qualunque algoritmo di allineamneto deve affrontare due problemi distinti: generare un allineamento 
+e stabilire se esso è plausibile. Per due sequenze, lo spazio di allineamento con gap è enorme; esiste un allineamento con score massimo rispetto
+allo schema scelto, ma esistono moltissimi allineamenti alternativi 
+con score vicino al massimo che possono essere forvianti.
+Inoltre è sempre possibile costruire un allineamento anche tra seqeunze non correlate, 
+producendo score positivi o visivamente convincenti. Questo aspetto 
+si amplifica nel caso MSA: ogni scelta di gap o colonne in fasi iniziali 
+condiziona l'intero allineamento e può propagare errori (\emph{once a gap, always a gap}),
+quindi la robustezza dello scoring e la sua interpretazione statica diventano determinanti per la qualità finale. 
+Il modello di scoring per allineamenti proteici si fonda su un confronto tra due modelli:
+\begin{itemize}
+    \item \textbf{Modello random} in cui le sequenze sono generate casualmente secondo frequenze di backgorund $p_a$ e le posizioni sono indipendenti;
+    \item \textbf{Modello non random evolutivo} in cui le sequenze condividono un antenato comune e le coppie di residui omologhi hanno probabilità coniugata $q_{a,b}$
+\end{itemize}
+Per una singola posizione dell'allineamento, la compatibilità con il modello evolutivo rispetto al caso è
+esprimibile tramite \textbf{odds ratio} $q_{a,b}/(p_a p_b)$. Assumendo indipendenza tra posizioni,gli 
+odds ratio si moltiplicano lungo l'allineamento; passando ai logaritmi, il punteggio complessivo diventa una somma:
+\[
+S = \sum_u \log \frac{q_{a_u,b_u}}{p_{a_u}p_{b_u}} = \sum_u s(a_u,b_u),
+\]
+dove $s(a,b)$ è la cella della matrice di sostituzione (log-odds score). In questa interpretazione:
+\begin{itemize}
+    \item $s(a,b)>0$ indica che la coppia $a$--$b$ è più probabile sotto il modello evolutivo che sotto il caso;
+    \item $s(a,b)<0$ indica una corrispondenza meno plausibile evolutivamente.
+\end{itemize}
+Questo formalismo è importante per l’MSA perché molte euristiche multiplo (p.es. progressive) ottimizzano esplicitamente obiettivi derivati dal pairwise, come lo \textbf{sum-of-pairs}, che somma/integra punteggi log-odds su tutte le coppie di sequenze e su tutte le colonne.
+
+\subsection{Matrici di sostituzione: PAM e BLOSUM come basi operative per scoring in MSA}
+Le matrici di sostituzione moderne non derivano dal numero minimo di cambiamenti a livello di codone (approccio troppo ingenuo, perché la selezione agisce principalmente a livello di funzione proteica), ma dalle sostituzioni \emph{osservate} in allineamenti multipli di famiglie proteiche, quindi incorporano automaticamente bias evolutivi (vincoli strutturali, sostituzioni conservative, composizione).
+
+\paragraph{PAM (Dayhoff/MDM).}
+Le PAM sono progettate per modellare la divergenza lungo un asse temporale/evolutivo. In sintesi: da allineamenti di sequenze molto simili si ricostruiscono (con un albero filogenetico) mutazioni accettate e si stimano (i) \textbf{mutabilità residue-specifica} e (ii) \textbf{probabilità di mutazione} $M_{a,b}$ (processo di Markov). La matrice 1-PAM rappresenta un cambiamento di 1 mutazione accettata per 100 residui; matrici a distanza maggiore (PAM120, PAM250) si ottengono elevando la matrice di transizione (Markov) a potenze maggiori. La matrice di scoring si ricava poi come log-odds tra probabilità nonrandom e frequenze di background.
+
+\paragraph{BLOSUM (Henikoff \& Henikoff).}
+Le BLOSUM sono progettate per \textbf{trovare regioni conservate}, usando blocchi locali ungapped e includendo sequenze più distanti. Invece di ricostruire alberi, le sostituzioni sono stimate direttamente da colonne di allineamenti multipli di blocchi conservati, con un passaggio fondamentale di \textbf{clustering} per ridurre bias da sovrarappresentazione: sequenze con identità $\ge C\%$ vengono raggruppate e si contano le sostituzioni \emph{tra cluster} (non dentro cluster). La soglia $C$ genera famiglie diverse (BLOSUM62, BLOSUM50, ecc.), e influenza in modo non banale i $q_{a,b}$ e quindi i punteggi. Questo è particolarmente rilevante in MSA perché la scelta della matrice altera la dinamica di inserzione dei gap e la stabilità delle colonne conservate: matrici “per divergenza alta” favoriscono il recupero di omologie distanti ma aumentano la sensibilità a parametri di gap e rumore.
+
+\subsection{Misure globali delle matrici e implicazioni pratiche per pipeline MSA}
+Le matrici possono essere caratterizzate anche da misure aggregate che influenzano direttamente la capacità di discriminare omologia dal caso:
+\begin{itemize}
+    \item la \textbf{relative entropy} $H$ (informazione media per posizione nel distinguere modello evolutivo vs random), che cresce/diminuisce in modo sistematico lungo le serie PAM/BLOSUM;
+    \item lo \textbf{expected score} (spesso negativo), che condiziona come gli score crescono con la lunghezza dell’allineamento.
+\end{itemize}
+In pratica, questi aspetti incidono su: (i) la lunghezza minima di un allineamento locale che può risultare significativo, (ii) la sensibilità nella ricerca di omologhi distanti (input dell’MSA), e (iii) la stabilità del profilo nelle fasi progressive o iterative.
+
+\subsection{Scoring dei gap: penalità lineare vs affine e motivazione algoritmica}
+Le sostituzioni tra residui possono essere modellate probabilisticamente con matrici; gli \textbf{indel} (gap) richiedono invece schemi più euristici. Il modello più semplice usa una penalità lineare $g(n)=-nE$, ma la biologia suggerisce che inserti/delezioni tendono a comparire come eventi estesi più che come gap isolati. Questo porta al modello \textbf{affine}:
+\[
+g(n) = -I - (n-1)E \quad (\text{gap opening } I,\ \text{gap extension } E),
+\]
+che penalizza fortemente l’apertura di nuovi gap e meno l’estensione, favorendo pochi gap lunghi rispetto a molti gap corti. Dal punto di vista MSA questa scelta è cruciale perché:
+\begin{itemize}
+    \item in progressive alignment, la politica di gap influenza direttamente la crescita del profilo e la stabilizzazione delle colonne;
+    \item in profile--profile alignment (DP su colonne), i costi di apertura/estensione governano la comparsa di colonne vuote e il posizionamento di blocchi conservati;
+    \item parametri non ottimizzati possono degradare drasticamente le prestazioni, spesso più delle differenze tra matrici.
+\end{itemize}
+In molte applicazioni pratiche si usano combinazioni matrice/penalità note come “buone” (p.es. intervalli tipici per proteine: $I \approx 7$--$15$, $E \approx 0.5$--$2$), ma in contesti MSA complessi (sequenze distanti, domini multipli, regioni low-complexity) la taratura resta un fattore determinante.
+
+\subsection{Connessione diretta con l’algoritmica MSA}
+In conclusione, questi concetti formalizzati per l’allineamento pairwise rappresentano l’ossatura algoritmica degli MSA moderni:
+\begin{itemize}
+    \item i metodi progressive e iterative riducono il problema multiplo a una sequenza di DP su sequenze o profili, quindi dipendono criticamente dalla definizione di $s(a,b)$ e $g(n)$;
+    \item la qualità dell’MSA non è garantita dal solo ottimo rispetto allo score: servono criteri statistici e controlli per distinguere omologie reali da similarità fortuita, soprattutto nella selezione del dataset e nella valutazione di regioni allineate;
+    \item la robustezza dell’algoritmo multiplo dipende dalla coerenza tra: matrice scelta (PAM/BLOSUM o specializzate), parametri di gap, e strategia (greedy progressive vs refinement vs consistency).
+\end{itemize}
+Questi principi saranno riutilizzati esplicitamente quando si considerano profili, MSA e scoring specializzati (sum-of-pairs, consistency) e quando si discute come strumenti come Clustal e T-Coffee derivino le proprie decisioni di colonna da una combinazione di DP, euristiche e modelli probabilistici dello scoring.
+
+\section{Programmazione dinamica (DP) per allineamenti: perché è il motore anche degli MSA}
+
+La \textbf{programmazione dinamica} (dynamic programming, DP) è la classe di algoritmi che rende trattabile, in modo \emph{esatto} rispetto a uno schema di scoring fissato, la ricerca dell’allineamento ottimo nello spazio enorme di tutti gli allineamenti possibili con gap. Sebbene qui la DP venga presentata nel contesto \emph{pairwise}, la sua importanza per l’\textbf{allineamento multiplo} (MSA) è diretta: molte pipeline MSA riducono il problema multiplo a una sequenza di allineamenti \textbf{sequenza--profilo} e \textbf{profilo--profilo} che sono, a tutti gli effetti, estensioni della DP (stessa struttura di ricorrenza, ma con scoring su colonne e funzioni obiettivo tipo \emph{sum-of-pairs}). In altri termini, la DP è il ``kernel'' di ottimizzazione locale su cui poggiano le strategie progressive/iterative: cambia l’oggetto (sequenze vs profili) e spesso cambia l’euristica di controllo, ma la logica di fondo rimane la stessa.
+
+\subsection{Principio di ottimalità e decomposizione in sottoproblemi}
+Il punto chiave che abilita la DP è il \textbf{principio di ottimalità}: se il punteggio di un allineamento è una somma di contributi per posizione (sostituzioni + penalità gap), allora un allineamento globale ottimo non può contenere sottoparti che non siano ottime rispetto agli stessi vincoli. Questo consente di sostituire una ricerca combinatoria ingestibile con una costruzione incrementale: l’ottimo per prefissi (o suffissi) delle sequenze viene riutilizzato per calcolare l’ottimo per prefissi più lunghi. Dal punto di vista algoritmico, questo trasforma un problema esponenziale in un problema polinomiale, tipicamente $O(mn)$ per due sequenze di lunghezza $m$ e $n$.
+
+\subsection{Allineamento globale: matrice DP e ricorrenza stile Needleman--Wunsch}
+Per l’allineamento globale tra $x=x_1\ldots x_m$ e $y=y_1\ldots y_n$ si definisce una matrice $S$ di dimensione $(m{+}1)\times(n{+}1)$, dove l’elemento $S_{i,j}$ rappresenta lo \textbf{score ottimo} per allineare i prefissi $x_1\ldots x_i$ e $y_1\ldots y_j$. Il riempimento della matrice procede dall’angolo in alto a sinistra verso il basso a destra e, con penalità di gap \emph{lineare} $g$ (costante per ogni gap unitario), ogni cella deriva da tre possibilità elementari:
+\begin{itemize}
+    \item \textbf{diagonale}: allineo $x_i$ con $y_j$ e aggiungo $s(x_i,y_j)$;
+    \item \textbf{verticale}: allineo $x_i$ con un gap (in $y$) e aggiungo $g$;
+    \item \textbf{orizzontale}: allineo $y_j$ con un gap (in $x$) e aggiungo $g$.
+\end{itemize}
+La ricorrenza è quindi:
+\[
+S_{i,j}=\max\Big\{
+S_{i-1,j-1}+s(x_i,y_j),\;
+S_{i-1,j}+g,\;
+S_{i,j-1}+g
+\Big\}.
+\]
+L’output globale è $S_{m,n}$, che è lo score dell’allineamento ottimo che include \emph{tutti} i residui di entrambe le sequenze.
+
+\subsection{Allineamento semiglobale: end-gap non penalizzati}
+Una variante pratica, importante quando le sequenze hanno lunghezze diverse o si sospetta che una sia contenuta nell’altra, è l’allineamento \textbf{semiglobale}: si permette l’overlap alle estremità senza penalità. Operativamente si imposta $S_{i,0}=0$ e $S_{0,j}=0$ (niente costo per gap iniziali/finali), mentre il riempimento interno resta identico. Il traceback non parte necessariamente da $S_{m,n}$, ma dal massimo nell’ultima riga o nell’ultima colonna. In ottica MSA, questo concetto riappare quando si allineano profili o domini e si vogliono evitare penalizzazioni artificiali in corrispondenza di regioni terminali non omologhe (p.es. proteine con code disordinate).
+
+\subsection{Gap affine}
+La penalità \textbf{affine} $g(n) = -I-(n-1)E$ distingue tra apertura del gap ($I$) ed estensione ($E$). Questo rompe la ricorrenza ``a tre vie'' semplice, perché per decidere la transizione in $S_{i,j}$ bisogna sapere se si sta \emph{iniziando} o \emph{proseguendo} un gap: tale informazione dipende dallo \emph{stato} dell’allineamento, non solo dal valore numerico di una cella adiacente.
+
+Se si trattasse un gap generico $g(n)$, bisognerebbe considerare \emph{tutte} le lunghezze possibili del gap per ogni cella, facendo crescere la complessità (in modo semplificato) fino a circa $O(mn^2)$ (o $O(nm^2)$). Per il caso affine, invece, si può riformulare introducendo matrici di stato aggiuntive:
+\begin{itemize}
+    \item $V_{i,j}$: miglior score di un allineamento che termina in $(i,j)$ con un gap in $y$ (cioè $x_i$ allineato a gap);
+    \item $W_{i,j}$: miglior score di un allineamento che termina in $(i,j)$ con un gap in $x$ (cioè $y_j$ allineato a gap);
+    \item $S_{i,j}$: miglior score complessivo che termina in $(i,j)$ (match/mismatch o transizione da $V/W$).
+\end{itemize}
+Le ricorrenze diventano del tipo:
+\[
+V_{i,j} = \max\{S_{i-1,j}-I,\; V_{i-1,j}-E\},\qquad
+W_{i,j} = \max\{S_{i,j-1}-I,\; W_{i,j-1}-E\},
+\]
+\[
+S_{i,j} = \max\{S_{i-1,j-1}+s(x_i,y_j),\; V_{i,j},\; W_{i,j}\}.
+\]
+In questo modo si recupera una computazione in $O(mn)$ con memoria $O(mn)$ (o meno con tecniche dedicate). Questo schema a stati è concettualmente fondamentale per l’MSA: nei metodi progressive, l’allineamento \textbf{profilo--profilo} usa DP con penalità affine e richiede esattamente questa logica multi-stato, solo che il termine $s(x_i,y_j)$ viene sostituito da uno score tra \textbf{colonne} (p.es. somma o media dei punteggi attesi tra residui osservati nelle colonne).
+
+\subsection{Allineamento locale: Smith--Waterman e requisito di score atteso negativo}
+Quando non si assume omologia lungo tutta la lunghezza (caso tipico: domini condivisi, proteine multidominio), si usa l’allineamento \textbf{locale}. La DP è quasi identica, ma con una modifica concettuale: si forza ogni cella a non scendere sotto zero,
+\[
+S_{i,j}=\max\{0,\; \text{transizioni}\},
+\]
+e il traceback parte dalla \textbf{cella con score massimo} nell’intera matrice, fermandosi quando si incontra uno zero. Questo seleziona un segmento ad alta similarità ignorando regioni rumorose. Il requisito tecnico è che lo schema di scoring abbia \textbf{valore atteso negativo} su allineamenti random (condizione soddisfatta dalle matrici standard come BLOSUM/PAM con parametri ragionevoli): altrimenti score positivi si accumulerebbero anche su regioni casuali e la nozione di ``massimo locale significativo'' collasserebbe.
+
+In MSA, la rilevanza è doppia: (i) la selezione di regioni omologhe da allineare può dipendere da allineamenti locali, (ii) molte strategie di database searching (pre-filtro) e di costruzione di librerie di vincoli (p.es. T-Coffee) usano blocchi/allineamenti locali come evidenza primaria, che viene poi integrata nell’MSA finale.
+
+\subsection{Allineamenti locali subottimi distinti: decomposizione per domini e ripetizioni}
+Oltre all’allineamento locale ottimo, è spesso utile ricavare allineamenti locali \textbf{subottimi ma distinti} (che non condividono coppie di residui allineati con l’ottimo), ad esempio per proteine con più domini in comune o per sequenze con ripetizioni. Una tecnica efficiente consiste nel:
+\begin{enumerate}
+    \item calcolare l’ottimo locale;
+    \item azzerare (o inibire) le celle lungo il percorso dell’ottimo;
+    \item ricalcolare \emph{solo} la regione influenzata (a destra e sotto, per dipendenze DP), monitorando quando i valori tornano invariati per interrompere presto il ricalcolo;
+    \item ripetere per ulteriori subottimi.
+\end{enumerate}
+Dal punto di vista MSA, questa idea è utile per identificare automaticamente più ``ancore'' omologhe (domini) che poi possono guidare l’allineamento multiplo o la segmentazione in sottoproblemi più stabili.
+
+\subsection{Accelerazioni non rigorose: bande e X-drop come compromesso computazionale}
+La DP completa richiede tempo e memoria proporzionali a $mn$. Per sequenze lunghe (o per ricerche su database) si adottano approssimazioni che \emph{non garantiscono} l’ottimo:
+\begin{itemize}
+    \item \textbf{banded DP}: si calcolano solo celle vicine a una diagonale (assumendo pochi indel). È tipico in contesti dove ci si aspetta una buona collinearità (p.es. nucleotidi con gap limitati).
+    \item \textbf{X-drop}: si espande la regione calcolata solo finché gli score non cadono di più di $X$ rispetto al best corrente; è una strategia di ``potatura'' adattiva. La computazione spesso procede per antidiagonali e mantiene una finestra attiva $[i_L,i_U]$ per ogni antidiagonale, eliminando (assegnando $-\infty$) celle troppo sotto-soglia.
+\end{itemize}
+Queste tecniche sono concettualmente rilevanti per MSA perché la scalabilità è un vincolo strutturale: anche se l’MSA non usa DP $n$-dimensionale (impraticabile), deve comunque fare molti DP 2D (pairwise o profile--profile). Per dataset grandi, implementazioni industriali introducono esattamente questi compromessi: pre-filtri, banding, X-drop, e caching per ridurre il costo senza perdere troppa accuratezza nelle regioni veramente conservative.
+

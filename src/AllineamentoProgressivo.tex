@@ -1,0 +1,105 @@
+% !TeX root = main.tex\
+\section{Allineamento Progressivo}
+L’allineamento progressivo è una delle tecniche più utilizzate per l’allineamento multiplo di sequenze (Multiple Sequence Alignment, MSA) ed è alla base della maggior parte dei software di uso pratico in bioinformatica. L’obiettivo dell’MSA è allineare simultaneamente un insieme di sequenze biologiche (DNA, RNA o proteine) al fine di evidenziare regioni conservate, motivi funzionali e relazioni evolutive. Tuttavia, il problema dell’allineamento multiplo ottimale è computazionalmente intrattabile: una formulazione esatta tramite programmazione dinamica ha complessità esponenziale $O(L^N)$, dove $L$ è la lunghezza delle sequenze e $N$ il loro numero, rendendo l’approccio impraticabile già per un numero moderato di sequenze.
+
+L’allineamento progressivo rappresenta quindi una strategia euristica che riduce drasticamente la complessità computazionale, sacrificando l’ottimalità globale a favore dell’efficienza. L’idea di base consiste nel costruire l’allineamento multiplo in modo incrementale, seguendo il principio secondo cui sequenze evolutivamente più simili dovrebbero essere allineate per prime, per poi integrare progressivamente le sequenze più distanti. In questo modo, la complessità complessiva può essere ridotta a $O(N^2 \cdot L^2)$, rendendo l’approccio applicabile a dataset di grandi dimensioni.
+
+Dal punto di vista concettuale, l’allineamento progressivo procede per “gradi di somiglianza”. Se una sequenza si allinea bene con una seconda, e questa a sua volta con una terza, è possibile costruire un allineamento che le comprenda tutte. Tuttavia, questo approccio introduce una forte dipendenza dall’ordine con cui le sequenze vengono allineate, rendendo cruciale la fase di inizializzazione e la costruzione dell’albero guida.
+
+\subsection*{Fasi dell’algoritmo progressivo}
+L’algoritmo di allineamento progressivo si articola tipicamente in tre fasi principali.
+
+\paragraph{Calcolo della matrice delle distanze.}
+In una prima fase, tutte le coppie di sequenze vengono confrontate mediante allineamenti pairwise (generalmente globali), per un totale di $\frac{N(N-1)}{2}$ confronti. Da ciascun allineamento si ricava un punteggio di similarità o una distanza evolutiva, che viene memorizzata in una matrice delle distanze. Questa fase fornisce una stima preliminare delle relazioni tra le sequenze, senza produrre ancora un allineamento multiplo.
+
+\paragraph{Costruzione dell’albero guida.}
+A partire dalla matrice delle distanze, si costruisce un albero filogenetico approssimativo (guide tree) mediante algoritmi di clustering gerarchico come UPGMA o Neighbor-Joining. È importante sottolineare che questo albero non rappresenta necessariamente la reale storia evolutiva delle sequenze, ma ha il solo scopo di determinare l’ordine con cui le sequenze (o gruppi di sequenze) verranno allineate. Le foglie dell’albero corrispondono alle sequenze originali, mentre i nodi interni rappresentano fusioni progressive di sottoinsiemi già allineati.
+
+\paragraph{Allineamento progressivo lungo l’albero.}
+Seguendo l’albero guida dalle foglie verso la radice, si allineano inizialmente le due sequenze più simili. Successivamente, le altre sequenze vengono integrate allineandole non più a singole sequenze, ma a profili di allineamento già costruiti. In questa fase possono avvenire sia allineamenti \emph{sequence-to-profile} sia allineamenti \emph{profile-to-profile}. Il risultato finale è un allineamento multiplo che include tutte le sequenze di partenza.
+
+
+\subsection{Allineamento Progressivo in Python}
+Scrivere un MSA completo (come Clustal) richiede migliaia di righe, ma il concetto chiave che differenzia l'allineamento progressivo da quello a coppie è la capacità di allineare un profilo contro un altro profilo. \\
+In questo codice, è simulato l'ultimo passaggio: ci sono due gruppi di sequenze già pre-allineate (Profili) ed il codice va ad unirle. L'algoritmo estende Needleman-Wunsch usando una metrica "Sum of Pairs". \\
+
+\begin{lstlisting}[language=Python, caption={Implementazione dell'allineamento progressivo tra due profili}, label={lst:align_prof}]
+import numpy as np
+
+def get_profile_column_score(col_a, col_b):
+    """
+    Calcola il punteggio tra due colonne di due profili diversi.
+    Usa la logica 'Sum of Pairs'.
+    """
+    score = 0
+    # Confronta ogni residuo del primo profilo con ogni residuo del secondo
+    for char_a in col_a:
+        for char_b in col_b:
+            if char_a == '-' and char_b == '-':
+                step_score = 0  # Gap vs Gap (spesso ignorato)
+            elif char_a == '-' or char_b == '-':
+                step_score = -2 # Penalita' gap
+            elif char_a == char_b:
+                step_score = 1  # Match
+            else:
+                step_score = -1 # Mismatch
+            
+            score += step_score
+            
+    # Normalizzazione per evitare che profili grandi dominino il punteggio
+    return score / (len(col_a) * len(col_b))
+
+def align_profiles(profile_A, profile_B):
+    """
+    Allinea due profili (liste di stringhe gia' allineate internamente).
+    Input: profile_A, profile_B (liste di stringhe)
+    Output: Score dell'allineamento ottimale
+    """
+    n = len(profile_A[0]) # Lunghezza profilo A
+    m = len(profile_B[0]) # Lunghezza profilo B
+    
+    # Inizializzazione matrice DP
+    score_matrix = np.zeros((n + 1, m + 1))
+    
+    # Inizializzazione prima riga e colonna (Gap penalties lineari)
+    for i in range(1, n + 1):
+        score_matrix[i][0] = score_matrix[i-1][0] - 2
+    for j in range(1, m + 1):
+        score_matrix[0][j] = score_matrix[0][j-1] - 2
+        
+    # Riempimento matrice (Fase Forward)
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            # Estraiamo le colonne i-esima e j-esima dai profili
+            col_a = [seq[i-1] for seq in profile_A]
+            col_b = [seq[j-1] for seq in profile_B]
+            
+            match_score = get_profile_column_score(col_a, col_b)
+            
+            # Calcolo dei punteggi per le tre direzioni possibili
+            score_diag = score_matrix[i-1][j-1] + match_score
+            score_up   = score_matrix[i-1][j]   - 2 # Gap in B
+            score_left = score_matrix[i][j-1]   - 2 # Gap in A
+            
+            # Scelta del massimo (approccio Greedy/DP)
+            score_matrix[i][j] = max(score_diag, score_up, score_left)
+            
+    return score_matrix[n][m] 
+\end{lstlisting}
+
+\subsection*{Profili e allineamento profile-based}
+Un elemento chiave dell’allineamento progressivo è il concetto di \textbf{profilo}. Dopo i primi passi, l’algoritmo non lavora più su sequenze singole, ma su profili che rappresentano insiemi di sequenze già allineate. Un profilo può essere interpretato come una descrizione posizione-specifica delle preferenze di residuo lungo le colonne dell’allineamento.
+
+Nel caso più semplice, il punteggio tra una nuova sequenza e un profilo, o tra due profili, viene calcolato usando la metrica \emph{Sum of Pairs}: il punteggio di allineamento tra due colonne è ottenuto sommando (o mediando) i punteggi di sostituzione tra tutte le coppie di residui appartenenti alle colonne considerate, includendo opportune penalità per i gap. Questo approccio generalizza naturalmente l’allineamento pairwise classico basato su programmazione dinamica.
+
+Una rappresentazione più informativa del profilo è fornita dalle \emph{Position-Specific Scoring Matrices} (PSSM), in cui ogni colonna dell’allineamento è associata a un vettore di punteggi specifici per ciascun residuo. I punteggi sono spesso espressi in forma log-odds, confrontando la probabilità osservata di un residuo in una data posizione con la sua frequenza di background. In questo modo, colonne altamente conservate diventano più selettive, mentre colonne variabili rimangono più permissive, migliorando la sensibilità dell’allineamento nei confronti di omologie remote.
+
+Poiché nelle fasi iniziali del progressive alignment i profili sono costruiti a partire da poche sequenze, le stime delle frequenze residue possono essere instabili. Per evitare probabilità nulle e punteggi estremi, si introducono \textbf{pseudocounts}, che agiscono come una forma di regolarizzazione e rendono il profilo più robusto quando il numero di sequenze è ridotto. Inoltre, per evitare che sequenze altamente simili dominino il profilo, vengono applicate tecniche di \textbf{sequence weighting}, spesso basate sulla variabilità osservata in ciascuna colonna dell’allineamento.
+
+\subsection*{Limiti dell’allineamento progressivo}
+Il principale limite dell’allineamento progressivo è il suo carattere greedy, spesso riassunto dall’espressione “\emph{once a gap, always a gap}”. I gap introdotti nei primi passi dell’allineamento non vengono più modificati nelle fasi successive; di conseguenza, un errore commesso durante l’allineamento di sequenze molto simili può propagarsi lungo l’intero processo senza possibilità di correzione. Questo comportamento è una conseguenza diretta dell’assenza di una fase di revisione globale dell’allineamento.
+
+\subsection*{Evoluzioni dell’approccio progressivo}
+Per mitigare questi limiti, sono stati sviluppati approcci più avanzati. I metodi di \emph{iterative refinement}, adottati da software come MAFFT e MUSCLE, introducono una fase di ottimizzazione successiva all’allineamento progressivo iniziale, in cui singole sequenze o gruppi di sequenze vengono temporaneamente rimossi e riallineati per migliorare il punteggio globale. Un’altra strategia è il \emph{consistency-based scoring}, utilizzato da T-Coffee, che integra informazioni provenienti da allineamenti locali e globali preliminari per rendere più robusto lo scoring durante le prime fasi del processo progressivo.
+
+Nonostante i suoi limiti, l’allineamento progressivo rimane la pietra angolare dell’allineamento multiplo di sequenze, grazie al suo equilibrio tra accuratezza, efficienza computazionale e scalabilità.

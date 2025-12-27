@@ -1,0 +1,65 @@
+\documentclass[a4paper,14pt,oneside]{extbook}
+
+% --- Lingua e codifica ---
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+
+% --- Layout ---
+\usepackage{geometry}
+\usepackage{courier}
+
+% --- Grafica ---
+\usepackage{graphicx}
+\graphicspath{{img/}}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Definizione dei colori per il codice
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+
+% Configurazione dello stile di listings
+\lstdefinestyle{thesisStyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize, % Font monospaziato e dimensione ridotta
+    breakatwhitespace=false,         
+    breaklines=true,                 % A capo automatico se la riga è troppo lunga
+    captionpos=b,                    % La caption va sotto il codice
+    keepspaces=true,                 
+    numbers=left,                    % Numeri di riga a sinistra
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    frame=single                     % Cornice attorno al codice
+}
+
+\lstset{style=thesisStyle}
+
+% --- Matematica e tipografia ---
+\usepackage{amsmath}
+\usepackage{microtype}
+
+% --- URL e link ---
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+
+
+\title{Allineamento Progressivo}
+\authon{Ascolese - D'Andrea}
+\begin{document}
+\newpage
+\include{AllineamentoMultiplo}
+\include{Scoring}
+\include{AllineamentoProgressivo}
+\include{t-coffee}
+\end{document}
