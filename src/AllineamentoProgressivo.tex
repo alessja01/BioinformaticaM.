@@ -6,7 +6,7 @@ L’allineamento progressivo rappresenta quindi una strategia euristica che ridu
 
 Dal punto di vista concettuale, l’allineamento progressivo procede per “gradi di somiglianza”. Se una sequenza si allinea bene con una seconda, e questa a sua volta con una terza, è possibile costruire un allineamento che le comprenda tutte. Tuttavia, questo approccio introduce una forte dipendenza dall’ordine con cui le sequenze vengono allineate, rendendo cruciale la fase di inizializzazione e la costruzione dell’albero guida.
 
-\subsection*{Fasi dell’algoritmo progressivo}
+\subsection{Fasi dell’algoritmo progressivo}
 L’algoritmo di allineamento progressivo si articola tipicamente in tre fasi principali.
 
 \paragraph{Calcolo della matrice delle distanze.}
@@ -87,7 +87,7 @@ def align_profiles(profile_A, profile_B):
     return score_matrix[n][m] 
 \end{lstlisting}
 
-\subsection*{Profili e allineamento profile-based}
+\subsection{Profili e allineamento profile-based}
 Un elemento chiave dell’allineamento progressivo è il concetto di \textbf{profilo}. Dopo i primi passi, l’algoritmo non lavora più su sequenze singole, ma su profili che rappresentano insiemi di sequenze già allineate. Un profilo può essere interpretato come una descrizione posizione-specifica delle preferenze di residuo lungo le colonne dell’allineamento.
 
 Nel caso più semplice, il punteggio tra una nuova sequenza e un profilo, o tra due profili, viene calcolato usando la metrica \emph{Sum of Pairs}: il punteggio di allineamento tra due colonne è ottenuto sommando (o mediando) i punteggi di sostituzione tra tutte le coppie di residui appartenenti alle colonne considerate, includendo opportune penalità per i gap. Questo approccio generalizza naturalmente l’allineamento pairwise classico basato su programmazione dinamica.
@@ -96,10 +96,26 @@ Una rappresentazione più informativa del profilo è fornita dalle \emph{Positio
 
 Poiché nelle fasi iniziali del progressive alignment i profili sono costruiti a partire da poche sequenze, le stime delle frequenze residue possono essere instabili. Per evitare probabilità nulle e punteggi estremi, si introducono \textbf{pseudocounts}, che agiscono come una forma di regolarizzazione e rendono il profilo più robusto quando il numero di sequenze è ridotto. Inoltre, per evitare che sequenze altamente simili dominino il profilo, vengono applicate tecniche di \textbf{sequence weighting}, spesso basate sulla variabilità osservata in ciascuna colonna dell’allineamento.
 
-\subsection*{Limiti dell’allineamento progressivo}
+\subsection{Limiti dell’allineamento progressivo}
 Il principale limite dell’allineamento progressivo è il suo carattere greedy, spesso riassunto dall’espressione “\emph{once a gap, always a gap}”. I gap introdotti nei primi passi dell’allineamento non vengono più modificati nelle fasi successive; di conseguenza, un errore commesso durante l’allineamento di sequenze molto simili può propagarsi lungo l’intero processo senza possibilità di correzione. Questo comportamento è una conseguenza diretta dell’assenza di una fase di revisione globale dell’allineamento.
 
-\subsection*{Evoluzioni dell’approccio progressivo}
+\subsection{Evoluzioni dell’approccio progressivo}
 Per mitigare questi limiti, sono stati sviluppati approcci più avanzati. I metodi di \emph{iterative refinement}, adottati da software come MAFFT e MUSCLE, introducono una fase di ottimizzazione successiva all’allineamento progressivo iniziale, in cui singole sequenze o gruppi di sequenze vengono temporaneamente rimossi e riallineati per migliorare il punteggio globale. Un’altra strategia è il \emph{consistency-based scoring}, utilizzato da T-Coffee, che integra informazioni provenienti da allineamenti locali e globali preliminari per rendere più robusto lo scoring durante le prime fasi del processo progressivo.
 
 Nonostante i suoi limiti, l’allineamento progressivo rimane la pietra angolare dell’allineamento multiplo di sequenze, grazie al suo equilibrio tra accuratezza, efficienza computazionale e scalabilità.
+
+\subsection{Ottimizzazioni Euristiche nel Calcolo delle Distanze}
+\label{subsec:prog_heuristics}
+Sebbene il calcolo formale della matrice delle distanze richieda un allineamento globale ottimale per ogni coppia di sequenze ($O(N^2 L^2)$), le implementazioni reali come ClustalW adottano euristiche per abbattere i tempi di calcolo nella prima fase. Invece di eseguire una programmazione dinamica completa (Needleman-Wunsch) per tutte le coppie, si utilizza spesso un approccio basato sul conteggio delle \textit{k-tuple} (o \textit{word counts}), simile a quello utilizzato nei motori di ricerca per database come FASTA o BLAST. 
+L'algoritmo identifica brevi segmenti di lunghezza $k$ (es. $k=1$ o $2$ per le proteine) identici tra due sequenze e stima la distanza evolutiva basandosi sul numero di match trovati, penalizzando le differenze di lunghezza. Questo approccio riduce la complessità della prima fase a $O(N^2 L)$ o $O(N^2)$, rendendo l'algoritmo scalabile anche per centinaia di sequenze, pur introducendo un margine di approssimazione nella topologia iniziale dell'albero guida.
+
+\subsection{Penalità dei Gap Posizione-Specifiche nei Profili}
+\label{subsec:profile_gap_pen}
+Una delle criticità maggiori nell'allineamento profilo-profilo è la determinazione del costo di apertura ed estensione dei gap. A differenza dell'allineamento a coppie, dove le penalità sono fisse (affine gap penalty), nell'allineamento progressivo moderno le penalità sono dinamiche e dipendono dal contesto del profilo. 
+Software come ClustalW implementano regole \textit{position-specific}:
+\begin{itemize}
+    \item \textbf{Penalità ridotta} per l'apertura di un gap in posizioni dove sono già presenti gap (per favorire l'allineamento a blocchi).
+    \item \textbf{Penalità aumentata} se il gap cade all'interno di regioni idrofobiche o strutturalmente conservate (presunti elementi di struttura secondaria come $\alpha$-eliche).
+    \item \textbf{Penalità per residui specifici} (es. Glicina o Prolina) che favoriscono strutturalmente le curve e quindi le inserzioni/delezioni.
+\end{itemize}
+Queste regole tentano di mimare i vincoli strutturali biologici, compensando parzialmente la natura \textit{greedy} dell'algoritmo.

@@ -1,3 +1,5 @@
+\section{T-Coffee}
+
 \noindent Sebbene l'allineamento progressivo classico, esemplificato dalla famiglia di software Clustal, rappresenti un'euristica efficace per ridurre la complessità computazionale dell'allineamento multiplo (MSA), esso soffre intrinsecamente della natura "greedy" (ingorda) dell'algoritmo. \\
 La limitazione principale risiede nell'impossibilità di correggere gli errori commessi nelle prime fasi della costruzione dell'allineamento: una volta inserito un gap, questo viene propagato irreversibilmente. \\
 Per mitigare questo problema senza abbandonare l'efficienza dello schema progressivo, nel 2000 Notredame, Higgins e Heringa hanno introdotto T-Coffee (Tree-based Consistency Objective Function For alignmEnt Evaluation). T-Coffee non abbandona l'architettura progressiva, ma ne rivoluziona la fase di valutazione: invece di basarsi su matrici di sostituzione statiche (come le serie BLOSUM o PAM), l'algoritmo costruisce una funzione obiettivo dinamica basata sul concetto di consistenza.
@@ -50,3 +52,17 @@ Limitazioni:
 
 \subsection{Conclusioni sul Metodo}
 In conclusione, T-Coffee rappresenta l'evoluzione qualitativa dell'allineamento progressivo. Pur mantenendo l'euristica gerarchica necessaria per trattare allineamenti multipli, risolve parzialmente il problema del posizionamento errato dei gap attraverso un pre-processing "consapevole" dell'intero dataset. Esso dimostra che l'informazione contenuta in sequenze intermedie è fondamentale per allineare correttamente sequenze distanti, spostando il focus dall'ottimizzazione locale (pairwise) a quella globale (consistency).
+
+\subsection{Integrazione di Allineamenti Locali e Globali nella Libreria}
+\label{subsec:tcoffee_local_global}
+La potenza dell'algoritmo T-Coffee risiede nella sua capacità di combinare informazioni eterogenee all'interno della stessa libreria primaria. Mentre i metodi progressivi standard tendono a favorire l'allineamento globale (coprendo l'intera lunghezza della sequenza), T-Coffee popola la sua libreria utilizzando due distinti algoritmi per ogni coppia di sequenze:
+\begin{enumerate}
+    \item \textbf{Metodo Globale (ClustalW):} Utile per allineare sequenze di lunghezza simile e altamente omologhe.
+    \item \textbf{Metodo Locale (LALIGN):} Fondamentale per identificare domini conservati o motivi funzionali anche quando le sequenze circostanti sono molto divergenti o di lunghezza differente.
+\end{enumerate}
+La funzione obiettivo basata sulla consistenza agisce quindi come un arbitro: se un residuo $x$ è allineato a $y$ sia dall'algoritmo locale che da quello globale, il peso nella libreria sarà alto. Se i due metodi sono in disaccordo, il peso sarà inferiore, riflettendo l'incertezza posizionale. Questo approccio ibrido rende T-Coffee particolarmente robusto nell'analisi di proteine multidominio.
+
+\subsection{Valutazione dell'Affidabilità tramite Indice CORE}
+\label{subsec:tcoffee_core}
+Un vantaggio distintivo dell'approccio basato sulla consistenza è la capacità di quantificare matematicamente la qualità dell'allineamento finale puntuale. T-Coffee non si limita a produrre l'allineamento, ma fornisce un indice di affidabilità chiamato \textbf{CORE} (Consistency of Overall Residue Evaluation). 
+Per ogni residuo allineato, l'algoritmo calcola un punteggio (da 0 a 9) che riflette quanto l'allineamento finale sia in accordo con la libreria estesa costruita inizialmente. Un punteggio elevato (es. rosso/9) indica che l'allineamento di quel residuo è supportato dalla maggioranza delle altre sequenze nel dataset (proprietà transitiva forte); un punteggio basso (es. blu/1) suggerisce che l'algoritmo ha dovuto operare una scelta arbitraria in una zona di conflitto. In una tesi, l'analisi dell'indice CORE è essenziale per distinguere le regioni dell'allineamento biologicamente significative dal "rumore" algoritmico.
