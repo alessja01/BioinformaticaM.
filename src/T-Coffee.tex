@@ -17,15 +17,58 @@ Invece di calcolare una semplice matrice di distanze, T-Coffee genera una librer
     \item Allineamento Locale: Ottenuto tramite l'algoritmo LALIGN (Smith-Waterman), per identificare regioni conservate o domini condivisi anche in presenza di scarsa similarità globale.
 \end{itemize}
 Ogni coppia di residui allineati $(x, y)$ proveniente da questi allineamenti viene inserita nella libreria con un peso iniziale pari alla percentuale di identità dell'allineamento da cui proviene.
+\paragraph{Rappresentazione della libreria}
+La libreria primaria può essere vista come una collezione di vincoli \textsl{residuo-residuo}
+pesati, ciascuno dei quali collega una posizione specifica di una sequenza a 
+una posizione specifica di un'altra. In termini implementativi (o, più astrattamente, di strutture dati), 
+è naturale rappresentarla come una mappa/lookup table indicizzata da una quadrupla che 
+identifica univocamente i due residui:
+\[
+(i,a,j,b)\quad \text{con } i<j
+\]
+dove \textsl{i} e \textsl{j} sono gli identificatori delle sequenze e \textsl{a,b}
+le posizioni dei residui (nelle sequenze originali, prima dell'MSA). Il valore 
+associato è un peso $w_{i,a,j,b}$ che quantifica la confidenza del vincolo. 
+Quando più sorgenti contribuiscono allo stesso vincolo (ad esempio un allineamento globale e uno locale per la stessa coppia di sequenze),
+i contributi vengono combinati (ad esempio per somma o media pesata)
+$w_{i,a,j,b} \leftarrow w_{i,a,j,b} + w_{\text{sorgente}}$
+Questa rappresentazione rende immediato, nelle fasi successive, recuperare il 
+supporto di consinstenza per ogni potenziale allineamento tra residui
 
 \subsubsection{Estensione della Libreria}
-Questa è la fase cruciale che differenzia T-Coffee dagli altri metodi. L'obiettivo è ricalcolare il peso di ogni coppia di residui $(x, y)$ considerando le informazioni fornite da una terza sequenza intermedia $S_Z$. Il peso esteso tra il residuo $x$ della sequenza $A$ e il residuo $y$ della sequenza $B$ è calcolato come:$$W(A_x, B_y) = W_{diretto}(A_x, B_y) + \sum_{Z \neq A,B} \min(W(A_x, Z_k), W(Z_k, B_y))$$ Dove:
-\begin{itemize}
-    \item $W_{diretto}$ è il peso derivato dall'allineamento a coppie iniziale.
-    \item La sommatoria itera su tutte le altre sequenze $Z$ nel dataset.
-    \item Il termine $\min$ rappresenta il "collo di bottiglia" della consistenza: la confidenza dell'allineamento indiretto $A \to Z \to B$ è limitata dall'allineamento più debole nella catena.
-\end{itemize}
-Questo processo trasforma la libreria in una matrice di pesi "consistency-based", dove i segnali di allineamento forti vengono amplificati dal supporto delle altre sequenze, mentre i segnali spuri (rumore) vengono attenuati.
+La fase di \emph{library extension} è l'elemento che distingue T-Coffee
+dai metodi progressivi classici. L'idea è rafforzare (o indebolire) il peso
+di un vincolo tra due residui non solo in base al loro allineamento diretto,
+ma anche in base alla coerenza con gli allineamenti che coinvolgono le altre 
+sequenze del dataset.
+Siano $(i,a)$ un residuo della sequenza $S_i$ e $(j,b)$ un residuo della
+sequenza $S_j$. Il vincolo diretto tra questi due residui, rappresentato dal peso
+$w_{i,a,j,b}$, può essere supportato indirettamente da una terza sequenza $S_k$ se esiste
+una posizione $c$ tale che i vincoli $(i,a)\leftrightarrow(k,c)$ e $(k,c)\leftrightarrow(j,b)$
+siano entrambi presenti e forti. In tal caso, la confidenzialità nell'associazione
+$(i,a)\leftrightarrow(j,b)$ aumenta, perchè l'evidenza è consinstente 
+lungo il percorso $S_i\rightarrow S_k\rightarrow S_j$
+
+Operativamente, l'estensione ricalcola il peso come somma del contributo diretto 
+e di contributi indiretti mediati da tutte le sequenze intermedie:
+\[
+w'_{i,a,j,b}
+=
+w_{i,a,j,b}
++
+\sum_{k \neq i,j}\;\sum_{c}
+f\!\left(w_{i,a,k,c},\, w_{k,c,j,b}\right),
+\]
+dove $f(\cdot,\cdot)$ è una funzione di combinazione che modella il principio
+del \emph{collo di bottiglia}: supporto indiretto non può essere più forte
+del legame più debole lungo la catena. Una scelta comune è 
+\[
+f(x,y)=\min(x,y),
+\]
+oppure, in varianti equivalenti, una forma moltiplicativa o normalizzata.
+Questo meccanico amplifica i vincoli compatibili attraveso molte sequenze
+e attenua i vincoli isolati, riducendo la propagazione di errori tipica 
+degli approcci progressivi puramente greedy.
 
 \subsubsection{Allineamento Progressivo}
 Una volta ottenuta la libreria estesa, T-Coffee procede con lo schema progressivo standard:
@@ -48,7 +91,25 @@ Vantaggi:
 Limitazioni:
 \begin{itemize}
     \item Scalabilità: Il costo $O(N^3)$ e l'elevata richiesta di memoria RAM per memorizzare la libreria lo rendono inadatto per l'allineamento di interi genomi o database massivi. Per ovviare a ciò, sono state sviluppate varianti come M-Coffee (meta-aligner) o versioni parallelizzate.
+    \item Elevato consumo di memoria, necessario per memorizzare la libereria estesa
 \end{itemize}
+
+\subsection{Integrazione di allineamenti locali e globali}
+La forza di T-Coffee risiede nelle capacità di combinare informazioni 
+eterogenee all'interno della stessa libreria. L'uso congiunto di allineamenti globali e locali permette di 
+bilanciare copertua e sensibilità: regioni globalmente omologhe sono trattate insieme a domini conservati
+immersi in contesti altamente divergenti. La funzione di consinstenza agisce come un 
+arbitro, assegnando maggiore peso ai vincoli supportati da più fonti e riducendo
+l'impatto delle discrepanze
+
+\subsection{Valutazione dell'affidabilità: indice CORE}
+Un ulteriore vantaggio dell'approccio basato sulla consinstenza è la possibilità di stimare
+l'affidabilità locale dell'allineamento finale.
+T-Coffee introduce \textbf{CORE}(Consinstency of Overall Residue Evaluation), che assegna
+a ogni residuo un punteggio discreto (da 0 a 9) indicante il grado di supporto fornito della libreria estesa.
+Residui con punteggio elevato sono fortemente supportati
+dalla maggioranza delle sequenze, mentre punteggi bassi 
+indicano regioni d'incertezza.
 
 \subsection{Conclusioni sul Metodo}
 In conclusione, T-Coffee rappresenta l'evoluzione qualitativa dell'allineamento progressivo. Pur mantenendo l'euristica gerarchica necessaria per trattare allineamenti multipli, risolve parzialmente il problema del posizionamento errato dei gap attraverso un pre-processing "consapevole" dell'intero dataset. Esso dimostra che l'informazione contenuta in sequenze intermedie è fondamentale per allineare correttamente sequenze distanti, spostando il focus dall'ottimizzazione locale (pairwise) a quella globale (consistency).
