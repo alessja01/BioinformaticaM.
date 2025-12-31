@@ -77,7 +77,87 @@ Una volta ottenuta la libreria estesa, T-Coffee procede con lo schema progressiv
     \item Costruzione dell'albero guida (Neighbor-Joining).
     \item Allineamento progressivo seguendo l'albero.
 \end{enumerate}
-La differenza sostanziale rispetto a Clustal è che, durante l'allineamento di due profili, il punteggio per allineare una colonna del profilo $P_1$ con una colonna del profilo $P_2$ non è dato da una matrice BLOSUM, ma dalla somma dei pesi nella libreria estesa per tutte le coppie di residui coinvolte.
+La differenza sostanziale rispetto a Clustal è che, durante l'allineamento di due profili, 
+il punteggio per allineare una colonna del profilo $P_1$ con una colonna del profilo $P_2$ 
+non è dato da una matrice di sostituzione statica (ad esempio BLOSUM), ma
+da una funzione di scoring basata sulla libreria estesa di consistenza.
+
+Siano $C_1$ e $C_2$ due colonne appartenenti rispettivamente ai profili
+$P_1$ e $P_2$. Il puteggio associato alla mossa diagonale della programmazione
+dinamica è definito come:
+\[
+\mathrm{Score}(C_1,C_2)
+=
+\sum_{\substack{(i,a)\in C_1\\(j,b)\in C_2}}
+w^{\text{ext}}_{i,a,j,b},
+\]
+dove la sommatoria considerata tutte le coppie di residui reali (escludendo
+i gap), identificati dalla coppia \(\text{sequenza},\text{posizione originale}\)
+e  $w^{\text{ext}}_{i,a,j,b}$ rappresenta il peso del vincolo residuo--residuo
+nella libreria estesa.
+
+\paragraph{Ricostruzione dell’allineamento (traceback).}
+La programmazione dinamica utilizzata per l’allineamento di sequenze o profili
+restituisce uno \emph{score ottimo}, ma per ottenere l’allineamento esplicito è
+necessario memorizzare anche le scelte che conducono a tale ottimo. A questo
+scopo, oltre alla matrice degli score, si mantiene una matrice di \emph{traceback}
+che registra, per ogni cella, quale transizione (diagonale, verticale, orizzontale)
+ha prodotto il valore massimo.
+
+Terminato il riempimento delle matrici, l’allineamento viene ricostruito
+percorrendo a ritroso il traceback dalla cella finale all’origine. Nel caso di
+un allineamento \emph{profilo--profilo}, tale procedura consente di costruire un
+nuovo profilo risultante: le colonne dei due profili vengono emesse in uscita
+seguendo il percorso di traceback, introducendo gap nelle righe appropriate e
+mantenendo la corrispondenza con le posizioni originali. Questo passaggio è
+essenziale perché T-Coffee produce un MSA completo, ottenuto iterando
+l’allineamento e l’aggiornamento dei profili lungo l’albero guida.
+
+
+\paragraph{Costruzione dell'albero guida}
+Come negli approcci progressivi classici, T-Coffee utilizza un albero guida
+(\emph{guide tree}) per determinare l'ordine con cui le sequenze e i profili vengono 
+progressivamente allineati. L'introduzione della libreria di consinstenza non elimina 
+la necessità di una struttura gerarchica, ma ne raffina l'effetto attraverso una funzione di scoring
+più informata.
+A partire dagli allineamenti pairwise iniziali, viene calcolata una matrice
+di distanze tra le sequenze, basata ad esempio sulla percentuale d'identità 
+o su misure derivate dai pesi della libreria. Su questa matrice 
+viene quindi costruito un albero guida mediante algoritmi di clustering gerarchico
+quali UPGMA o Neighbor-Joining.
+L'allineamento multiplo procede seguendo la topologia dell'albero: le 
+sequenze più vicine vengono allineate per prime, producendo profili
+intermedi che vengono successivamente allineati tra lodo. In ogni passo,
+l'allineamento tra due nodi dell'albero (sequenza--sequenza, sequenza--profilo o profilo--profilo)
+è realizzato tramite programmazione dinamica su colonne, utilizzando la 
+funzione di scoring basata sulla libreria estesa di consinstenza.
+Sebbene la presenzsa dell'albero guida non costituisca l'elemento distintivo
+del metodo T-Coffee, essa è essenziale per ottenere un vero allineamento 
+progressivo su larga scala. In assenza di una guida filogenetica, il metodo 
+si ridurrebbe a una dimostrazione locale del principio di consinstenza,
+piuttosto che a un algoritmo completo per l'allineamento multiplo
+
+\subsubsection{Gestione delle penalità di gap}
+Nelle implementazioni reali di T-Coffee, la gestione dei gap è più
+sofisticata rispetto ai modelli didattici basati su una penalità lineare costante.
+In particolare, vengono comunemente utilizzate penalità di gap di tipo
+affine, che distinguono tra il costo di apertura di un gap e il costo 
+di estensione dello stesso.
+
+Dal punto di vista algoritmico, ciò si traduce nell'uso di tre matrici 
+di programmazione dinamica: una matrice $M$ per gli allineamenti
+residuo--residuo, e due matrici $I_x$ e $I_y$ per rappresentare gap 
+aperti e prolungati rispettivamente in una delle due sequenze (o profili).
+Questo schema consente di modellare in modo più realistico eventi biologici
+come inserzioni e delezioni contigue.
+
+Inoltre, T-Coffee può modulare la penalizzazione dei gap in funzione
+del supporto fornito dalla libreria di consinstenza, penalizzando più fortemente l'introduzione
+di gap in regioni altamente supportate e consentendo maggiore Flessibilità 
+in regioni debolemente vincolate.
+Sebbene tali raffinamenti non siano strettamente necessari per definire
+il metodo T-Coffee, essi contribuiscono in modo significativo alla qualità biologica 
+all'allineamento finale.
 
 \subsection{Analisi della Complessità Computazionale}
 L'accuratezza superiore di T-Coffee comporta un costo computazionale significativo.Mentre un allineamento progressivo standard ha una complessità temporale di $O(N^2L^2)$, T-Coffee introduce un fattore cubico rispetto al numero delle sequenze a causa della fase di estensione della libreria.La complessità per la fase di estensione, che richiede il confronto di triplette di sequenze, è approssimabile a:$$O(N^3 L)$$Dove $N$ è il numero di sequenze e $L$ la loro lunghezza. Questo rende T-Coffee computazionalmente oneroso per dataset contenenti un elevato numero di sequenze (es. $N > 100-200$), limitandone l'uso a set di dati di dimensioni moderate dove la precisione è prioritaria rispetto alla velocità.

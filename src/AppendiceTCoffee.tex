@@ -1,0 +1,314 @@
+% !TeX root = main.tex
+\section{Implementazione: scheletro Python per T-Coffee}
+\label{app:tcoffee_python}
+
+In questa appendice viene riportato uno scheletro Python a scopo didattico,
+coerente con l’architettura dell’algoritmo T-Coffee descritta nel Capitolo~5.
+L’obiettivo non è fornire un’implementazione completa ed efficiente, ma
+illustrare in modo concreto la corrispondenza tra i concetti teorici
+(libreria primaria, estensione per consistenza, scoring basato sulla libreria
+e allineamento progressivo con traceback) e una possibile struttura
+implementativa.
+
+\subsection{Struttura generale}
+
+\begin{lstlisting}[language=Python, caption={Scheletro Python per T-Coffee (versione didattica)}]
+from __future__ import annotations
+from dataclasses import dataclass
+from typing import Dict, Tuple, List, Optional, Iterable
+
+# -----------------------------
+# Data structures
+# -----------------------------
+
+Resid = Tuple[int, int]  # (seq_id, pos0) with pos0 0-based
+LibKey = Tuple[int, int, int, int]  # (i, a, j, b) with i<j
+
+def norm_key(i: int, a: int, j: int, b: int) -> LibKey:
+    """Ensure i<j ordering for library keys."""
+    if i < j:
+        return (i, a, j, b)
+    return (j, b, i, a)
+
+Library = Dict[LibKey, float]
+
+@dataclass
+class AlnRow:
+    seq_id: int
+    aligned: str
+    # maps aligned-column index -> original pos (or None for gap)
+    col_to_pos: List[Optional[int]]
+
+Profile = List[AlnRow]
+
+# -----------------------------
+# 1 Primary library (toy)
+# -----------------------------
+
+def build_primary_library(seqs: List[str]) -> Library:
+    """
+    Build a primary library from pairwise alignments.
+    For a real T-Coffee, you'd combine global + local sources.
+    Here we do a very simple global alignment per pair (placeholder).
+    """
+    lib: Library = {}
+
+    for i in range(len(seqs)):
+        for j in range(i + 1, len(seqs)):
+            # TODO: replace with real Needleman-Wunsch traceback returning aligned strings + mapping
+            ai, aj = naive_global_align(seqs[i], seqs[j])
+
+            # weight could be %identity or any confidence score
+            w_source = percent_identity(ai, aj)
+
+            # add matched residue pairs to library
+            pi = -1
+            pj = -1
+            for c1, c2 in zip(ai, aj):
+                if c1 != "-":
+                    pi += 1
+                if c2 != "-":
+                    pj += 1
+                if c1 != "-" and c2 != "-":
+                    key = norm_key(i, pi, j, pj)
+                    lib[key] = lib.get(key, 0.0) + w_source
+    return lib
+
+
+def percent_identity(a: str, b: str) -> float:
+    matches = 0
+    aligned = 0
+    for x, y in zip(a, b):
+        if x == "-" or y == "-":
+            continue
+        aligned += 1
+        if x == y:
+            matches += 1
+    return (matches / aligned) if aligned else 0.0
+
+
+def naive_global_align(x: str, y: str) -> Tuple[str, str]:
+    """
+    Placeholder: NOT a real NW. Replace with your NW implementation with traceback.
+    For now, align by padding shorter one (only for scaffolding).
+    """
+    m, n = len(x), len(y)
+    if m < n:
+        return x + "-" * (n - m), y
+    if n < m:
+        return x, y + "-" * (m - n)
+    return x, y
+
+
+# -----------------------------
+# 2 Library extension (consistency)
+# -----------------------------
+
+
+def extend_library(primary: Library, n_seqs: int, mode: str = "min") -> Library:
+    """
+    Compute an extended library w_ext using consistency:
+      w'_{i,a,j,b} = w_{i,a,j,b} + sum_{k!=i,j} sum_c f(w_{i,a,k,c}, w_{k,c,j,b})
+    Here we implement a sparse version: only propagate through existing keys.
+    """
+    ext = dict(primary)  # start from direct weights
+
+    # Build adjacency: for each residue (i,a), store neighbors (k,c) with weights
+    neigh: Dict[Resid, List[Tuple[Resid, float]]] = {}
+    for (i, a, j, b), w in primary.items():
+        r1: Resid = (i, a)
+        r2: Resid = (j, b)
+        neigh.setdefault(r1, []).append((r2, w))
+        neigh.setdefault(r2, []).append((r1, w))
+
+    def f(x: float, y: float) -> float:
+        if mode == "min":
+            return min(x, y)
+        elif mode == "prod":
+            return x * y
+        else:
+            raise ValueError("mode must be 'min' or 'prod'")
+
+    # For every residue, look at two-step paths r -> mid -> t
+    for r, edges in neigh.items():
+        # r = (i,a)
+        for mid, w_rm in edges:
+            for t, w_mt in neigh.get(mid, []):
+                if t == r:
+                    continue
+                # add support r -> mid -> t
+                (i, a) = r
+                (j, b) = t
+                if i == j:
+                    continue
+                key = norm_key(i, a, j, b)
+                ext[key] = ext.get(key, 0.0) + f(w_rm, w_mt)
+
+    return ext
+
+# -----------------------------
+# 3 Library-based column scoring
+# -----------------------------
+
+def library_column_score(colA: List[Optional[Resid]], colB: List[Optional[Resid]], lib_ext: Library) -> float:
+    """
+    Score two columns using the extended library:
+      Score(C1,C2) = sum_{(i,a) in C1, (j,b) in C2} w_ext(i,a,j,b)
+    Ignore gaps (None).
+    """
+    score = 0.0
+    for ra in colA:
+        if ra is None:
+            continue
+        for rb in colB:
+            if rb is None:
+                continue
+            (i, a) = ra
+            (j, b) = rb
+            if i == j:
+                continue
+            score += lib_ext.get(norm_key(i, a, j, b), 0.0)
+    return score
+
+# -----------------------------
+# 4 Align profiles with DP + traceback
+# -----------------------------
+def profile_to_columns(profile: Profile) -> List[List[Optional[Resid]]]:
+    """
+    Convert profile rows into columns of Resid references.
+    Each column is a list over rows: Resid or None if gap.
+    """
+    n_cols = len(profile[0].aligned)
+    cols: List[List[Optional[Resid]]] = []
+    for c in range(n_cols):
+        col: List[Optional[Resid]] = []
+        for row in profile:
+            pos = row.col_to_pos[c]
+            col.append((row.seq_id, pos) if pos is not None else None)
+        cols.append(col)
+    return cols
+
+
+def align_profiles_with_library(
+    profA: Profile,
+    profB: Profile,
+    lib_ext: Library,
+    gap_open: float = -2.0,
+    gap_ext: float = -0.5,
+) -> Profile:
+    """
+    DP with affine gaps (M, Ix, Iy) + traceback.
+    Returns a merged profile (MSA rows).
+    """
+    colsA = profile_to_columns(profA)
+    colsB = profile_to_columns(profB)
+    m, n = len(colsA), len(colsB)
+
+    NEG = -1e18
+
+    # DP matrices
+    M = [[NEG] * (n + 1) for _ in range(m + 1)]
+    Ix = [[NEG] * (n + 1) for _ in range(m + 1)]  # gap in B (advance A)
+    Iy = [[NEG] * (n + 1) for _ in range(m + 1)]  # gap in A (advance B)
+
+    # Traceback pointers: store (state, pi, pj)
+    tbM: List[List[Tuple[str, int, int]]] = [[("?", 0, 0)] * (n + 1) for _ in range(m + 1)]
+    tbIx = [[("?", 0, 0)] * (n + 1) for _ in range(m + 1)]
+    tbIy = [[("?", 0, 0)] * (n + 1) for _ in range(m + 1)]
+
+    M[0][0] = 0.0
+
+    # init first column/row
+    for i in range(1, m + 1):
+        Ix[i][0] = gap_open + (i - 1) * gap_ext
+        tbIx[i][0] = ("Ix", i - 1, 0)
+    for j in range(1, n + 1):
+        Iy[0][j] = gap_open + (j - 1) * gap_ext
+        tbIy[0][j] = ("Iy", 0, j - 1)
+
+    # fill
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            s = library_column_score(colsA[i - 1], colsB[j - 1], lib_ext)
+
+            # M from M/Ix/Iy diag
+            candidates = [
+                (M[i - 1][j - 1] + s, ("M", i - 1, j - 1)),
+                (Ix[i - 1][j - 1] + s, ("Ix", i - 1, j - 1)),
+                (Iy[i - 1][j - 1] + s, ("Iy", i - 1, j - 1)),
+            ]
+            M[i][j], tbM[i][j] = max(candidates, key=lambda x: x[0])
+
+            # Ix: advance A, gap in B
+            cand_ix = [
+                (M[i - 1][j] + gap_open, ("M", i - 1, j)),
+                (Ix[i - 1][j] + gap_ext, ("Ix", i - 1, j)),
+            ]
+            Ix[i][j], tbIx[i][j] = max(cand_ix, key=lambda x: x[0])
+
+            # Iy: advance B, gap in A
+            cand_iy = [
+                (M[i][j - 1] + gap_open, ("M", i, j - 1)),
+                (Iy[i][j - 1] + gap_ext, ("Iy", i, j - 1)),
+            ]
+            Iy[i][j], tbIy[i][j] = max(cand_iy, key=lambda x: x[0])
+
+    # choose best end state
+    end_candidates = [(M[m][n], "M"), (Ix[m][n], "Ix"), (Iy[m][n], "Iy")]
+    _, state = max(end_candidates, key=lambda x: x[0])
+
+    # traceback path of operations: 'D' diag (match cols), 'A' gap in B, 'B' gap in A
+    ops: List[str] = []
+    i, j = m, n
+    while i > 0 or j > 0:
+        if state == "M":
+            prev_state, pi, pj = tbM[i][j]
+            ops.append("D")
+        elif state == "Ix":
+            prev_state, pi, pj = tbIx[i][j]
+            ops.append("A")  # consumed a col from A, gap in B
+        else:  # Iy
+            prev_state, pi, pj = tbIy[i][j]
+            ops.append("B")  # consumed a col from B, gap in A
+        state, i, j = prev_state, pi, pj
+
+    ops.reverse()
+
+    # Build merged alignment strings for all rows
+    merged: List[AlnRow] = []
+    for row in profA + profB:
+        merged.append(AlnRow(row.seq_id, "", []))
+
+    # Helper to append a whole column from a profile (or gaps)
+    def append_from_profile(rows: List[AlnRow], src: Profile, col_idx: Optional[int]):
+        # rows is merged rows; src is profile A or B; col_idx is column index in that src, None => all gaps
+        offset = 0 if src is profA else len(profA)
+        for r_i, src_row in enumerate(src):
+            target = rows[offset + r_i]
+            if col_idx is None:
+                target.aligned += "-"
+                target.col_to_pos.append(None)
+            else:
+                ch = src_row.aligned[col_idx]
+                target.aligned += ch
+                target.col_to_pos.append(src_row.col_to_pos[col_idx])
+
+    a_col = 0
+    b_col = 0
+    for op in ops:
+        if op == "D":
+            append_from_profile(merged, profA, a_col)
+            append_from_profile(merged, profB, b_col)
+            a_col += 1
+            b_col += 1
+        elif op == "A":  # col from A, gap in B
+            append_from_profile(merged, profA, a_col)
+            append_from_profile(merged, profB, None)
+            a_col += 1
+        else:  # op == "B": col from B, gap in A
+            append_from_profile(merged, profA, None)
+            append_from_profile(merged, profB, b_col)
+            b_col += 1
+
+    return merged
+\end{lstlisting}
