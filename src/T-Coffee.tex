@@ -7,6 +7,15 @@ Per mitigare questo problema senza abbandonare l'efficienza dello schema progres
 \subsection{Consistenza Biologica}
 L'idea fondamentale di T-Coffee è che l'allineamento tra due sequenze, $S_A$ e $S_B$, non debba dipendere esclusivamente dal confronto diretto tra i loro residui, ma debba essere informato dal modo in cui entrambe si allineano con tutte le altre sequenze del set. Se il residuo $x$ della sequenza $A$ è allineato con il residuo $z$ della sequenza $C$, e lo stesso residuo $z$ è allineato con il residuo $y$ della sequenza $B$, allora esiste una "evidenza transitoria" che $x$ e $y$ debbano essere allineati tra loro, anche se il confronto diretto $A-B$ (pairwise) non lo suggerisce fortemente. Questa proprietà transitiva è definita consistenza.
 
+\subsubsection{Funzione obiettivo basata sulla consinstenza}
+T-Coffee la consinstenza non è solo un principio euristico, ma definisce
+implicitamente una funzione obiettivo globale per l'allineamento multiplo.
+Dato un allineamento finale \textbf{A}, il suo punteggio può essere interpretato
+come la somma dei pesi dei vincoli della libreria che risulatno soddisfatti
+nell'MSA. In questo senso, l'algoritmo non massimizza direttamente una funzione
+locale basata su matrici di sostituzione, ma cerca un allineamento che sia il più coerente possibile con l'evidenza complessiva
+fornita dagli allineamenti pairwise e della sequenze intermediemi
+
 \subsection{L'Algoritmo T-Coffee}
 Il flusso di lavoro di T-Coffee si articola in tre fasi distinte, che precedono e modificano la classica procedura di allineamento progressivo.
 
@@ -158,6 +167,57 @@ in regioni debolemente vincolate.
 Sebbene tali raffinamenti non siano strettamente necessari per definire
 il metodo T-Coffee, essi contribuiscono in modo significativo alla qualità biologica 
 all'allineamento finale.
+
+\subsection{Confronto tra T-Coffee e allineamento progressivo classico (Clustal)}
+L'algoritmo T-Coffee si colloca concettualmente all'interno della famiglia
+dei metodi di allineamento progressivo, condividendo con strumenti come 
+ClustalW la stessa architettura generale basata su un albero guida e
+sull'allineamento iterativo di sequenze e profili. Tuttavia, la differenza
+fondamentale tra i due approcci risiede nella funzione obiettivo utilizzata
+durante la fase di allineamento progressivo.
+
+Nei metodi progressivi classici, come ClustalW, il punteggio per allineare
+due residui o due colonne è calcolato tramite una funzione \emph{Sum-of-Pairs}
+basata su una matrice di sostituzione (ad esempio BLOSUM o PAM) e su penalità
+di gap. Tale funzione riflette una similarità locale tra residui, valutata indipendentemente 
+per ciascuna coppia di sequenze. Le decisioni prese nelle prime fasi dell'allineamento
+sono irrevocabili e gli errori introdotti precocemente vengono propagati lungo 
+tutto l'MSA.
+
+Al contrario, T-Coffee sostituisce la matrice di sostituzione con una funzione
+di scoring basata su una libreria di vincoli residuo--residuo estesa per 
+consinstenza. In questo schema, la programmazione dinamica non valuta più 
+la sola similarità locale tra residui, ma il grado di supporto globale che
+una corrispondenza riceve dall'intero insieme delle sequenze. Un match può 
+quindi essere favorito anche in presenza di una bassa similarità diretta,
+purchè sia coerente con gli allineamenti che coinvolgono sequenze intermedie.
+
+Dal punto di vista algoritmico. è importante sottolineare che T-Coffee non 
+introduce una nuova forma di programmazione dinamica: la struttura del DP 
+rimane sostanzialmente identica a quella utilizzata da Clustal. La differenza
+risiede esclusivamente nella definizione della funzione di scoring, che 
+trasforma un approccio puramente \emph{greedy} in una procedura più robusta,
+capace di attenuare la propagazione di errori iniziali.
+
+In sintesi, mentre Clustal privilegia l'efficienza computazionale e 
+una valutazione locale delle corrispondenze, T-Coffee sacrifica parte 
+della scalabilità per ottenere un allineamento biologicamente più affidabile,
+sopratutto nel caso di famiglie di sequenze distanti o caratterizzate da 
+basse percentuale d'indentità
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+ & ClustalW & T-Coffee \\
+\hline
+Architettura & Progressiva & Progressiva \\
+Funzione di scoring & Matrice + SoP & Libreria di consistenza \\
+Uso di sequenze intermedie & No & Sì \\
+Robustezza agli errori iniziali & Bassa & Alta \\
+Costo computazionale & Basso & Elevato \\
+\hline
+\end{tabular}
+\end{center}
 
 \subsection{Analisi della Complessità Computazionale}
 L'accuratezza superiore di T-Coffee comporta un costo computazionale significativo.Mentre un allineamento progressivo standard ha una complessità temporale di $O(N^2L^2)$, T-Coffee introduce un fattore cubico rispetto al numero delle sequenze a causa della fase di estensione della libreria.La complessità per la fase di estensione, che richiede il confronto di triplette di sequenze, è approssimabile a:$$O(N^3 L)$$Dove $N$ è il numero di sequenze e $L$ la loro lunghezza. Questo rende T-Coffee computazionalmente oneroso per dataset contenenti un elevato numero di sequenze (es. $N > 100-200$), limitandone l'uso a set di dati di dimensioni moderate dove la precisione è prioritaria rispetto alla velocità.

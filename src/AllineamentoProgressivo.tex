@@ -20,7 +20,8 @@ Seguendo l’albero guida dalle foglie verso la radice, si allineano inizialment
 
 
 \subsection{Allineamento Progressivo in Python}
-Scrivere un MSA completo (come Clustal) richiede migliaia di righe, ma il concetto chiave che differenzia l'allineamento progressivo da quello a coppie è la capacità di allineare un profilo contro un altro profilo. \\
+Scrivere un MSA completo ,come Clustal, richiede migliaia di righe, ma il concetto chiave che differenzia l'allineamento progressivo da quello a coppie è la capacità di allineare un 
+profilo contro un altro profilo. \\
 In questo codice, è simulato l'ultimo passaggio: ci sono due gruppi di sequenze già pre-allineate (Profili) ed il codice va ad unirle. L'algoritmo estende Needleman-Wunsch usando una metrica "Sum of Pairs". \\
 
 \begin{lstlisting}[language=Python, caption={Implementazione dell'allineamento progressivo tra due profili}, label={lst:align_prof}]
