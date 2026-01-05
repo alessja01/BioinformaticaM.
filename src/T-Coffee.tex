@@ -262,8 +262,3 @@ La potenza dell'algoritmo T-Coffee risiede nella sua capacità di combinare info
     \item \textbf{Metodo Locale (LALIGN):} Fondamentale per identificare domini conservati o motivi funzionali anche quando le sequenze circostanti sono molto divergenti o di lunghezza differente.
 \end{enumerate}
 La funzione obiettivo basata sulla consistenza agisce quindi come un arbitro: se un residuo $x$ è allineato a $y$ sia dall'algoritmo locale che da quello globale, il peso nella libreria sarà alto. Se i due metodi sono in disaccordo, il peso sarà inferiore, riflettendo l'incertezza posizionale. Questo approccio ibrido rende T-Coffee particolarmente robusto nell'analisi di proteine multidominio.
-
-\subsection{Valutazione dell'Affidabilità tramite Indice CORE}
-\label{subsec:tcoffee_core}
-Un vantaggio distintivo dell'approccio basato sulla consistenza è la capacità di quantificare matematicamente la qualità dell'allineamento finale puntuale. T-Coffee non si limita a produrre l'allineamento, ma fornisce un indice di affidabilità chiamato \textbf{CORE} (Consistency of Overall Residue Evaluation). 
-Per ogni residuo allineato, l'algoritmo calcola un punteggio (da 0 a 9) che riflette quanto l'allineamento finale sia in accordo con la libreria estesa costruita inizialmente. Un punteggio elevato (es. rosso/9) indica che l'allineamento di quel residuo è supportato dalla maggioranza delle altre sequenze nel dataset (proprietà transitiva forte); un punteggio basso (es. blu/1) suggerisce che l'algoritmo ha dovuto operare una scelta arbitraria in una zona di conflitto. In una tesi, l'analisi dell'indice CORE è essenziale per distinguere le regioni dell'allineamento biologicamente significative dal "rumore" algoritmico.
