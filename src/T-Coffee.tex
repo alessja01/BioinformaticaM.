@@ -252,7 +252,8 @@ dalla maggioranza delle sequenze, mentre punteggi bassi
 indicano regioni d'incertezza.
 
 \subsection{Conclusioni sul Metodo}
-In conclusione, T-Coffee rappresenta l'evoluzione qualitativa dell'allineamento progressivo. Pur mantenendo l'euristica gerarchica necessaria per trattare allineamenti multipli, risolve parzialmente il problema del posizionamento errato dei gap attraverso un pre-processing "consapevole" dell'intero dataset. Esso dimostra che l'informazione contenuta in sequenze intermedie è fondamentale per allineare correttamente sequenze distanti, spostando il focus dall'ottimizzazione locale (pairwise) a quella globale (consistency).
+In conclusione, T-Coffee rappresenta l'evoluzione qualitativa dell'allineamento progressivo. Pur mantenendo l'euristica gerarchica necessaria per trattare allineamenti multipli, risolve parzialmente il problema del posizionamento errato dei gap attraverso un pre-processing "consapevole" dell'intero dataset. Esso dimostra che l'informazione contenuta in sequenze intermedie è fondamentale per allineare correttamente sequenze distanti, spostando il focus dall'ottimizzazione locale (pairwise) a quella globale (consistency). \\
+Mentre l'allineamento progressivo fornisce l'impalcatura algoritmica necessaria per gestire $N$ sequenze, T-Coffee ne raffina il contenuto informativo. Sostituendo le matrici statiche con una valutazione basata sulla consistenza globale, T-Coffee mitiga la natura irreversibile dell'approccio greedy, trasformando l'allineamento progressivo da una semplice euristica veloce a uno strumento ad alta precisione biologica.
 
 \subsection{Integrazione di Allineamenti Locali e Globali nella Libreria}
 \label{subsec:tcoffee_local_global}
