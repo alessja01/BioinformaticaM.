@@ -262,3 +262,32 @@ La potenza dell'algoritmo T-Coffee risiede nella sua capacità di combinare info
     \item \textbf{Metodo Locale (LALIGN):} Fondamentale per identificare domini conservati o motivi funzionali anche quando le sequenze circostanti sono molto divergenti o di lunghezza differente.
 \end{enumerate}
 La funzione obiettivo basata sulla consistenza agisce quindi come un arbitro: se un residuo $x$ è allineato a $y$ sia dall'algoritmo locale che da quello globale, il peso nella libreria sarà alto. Se i due metodi sono in disaccordo, il peso sarà inferiore, riflettendo l'incertezza posizionale. Questo approccio ibrido rende T-Coffee particolarmente robusto nell'analisi di proteine multidominio.
+
+\subsection{Evoluzione della Piattaforma T-Coffee: dal 2000 al 2025}
+\label{subsec:tcoffee_evolution}
+
+Dalla sua pubblicazione originale nel 2000, T-Coffee si è evoluto da singolo algoritmo di allineamento a piattaforma di integrazione versatile (spesso definita \textit{meta-aligner}). Lo sviluppo del software ha seguito due direttrici principali: nel primo decennio l'obiettivo primario è stato il miglioramento dell'accuratezza attraverso l'integrazione di dati eterogenei; nel decennio successivo, con l'avvento delle tecnologie di sequenziamento massivo (NGS), il focus si è spostato sulla scalabilità computazionale.
+
+\subsubsection{L'Era dell'Accuratezza e dell'Integrazione (2000-2010)}
+In questa fase, sono state sviluppate varianti specializzate per risolvere limitazioni specifiche dell'allineamento basato sulla sola sequenza primaria.
+
+\begin{itemize}
+    \item \textbf{M-Coffee (Meta-Coffee):} Introdotto per mitigare gli errori sistematici dei singoli algoritmi. M-Coffee costruisce la libreria di consistenza combinando gli output di molteplici software di allineamento terzi (es. MUSCLE, MAFFT, ProbCons). Il risultato finale è un allineamento di "consenso" che, statisticamente, supera in accuratezza ogni singolo metodo individuale.
+    
+    \item \textbf{Expresso (3D-Coffee):} Rappresenta un salto di qualità nell'analisi di sequenze distanti (<20\% di identità). Questa variante interroga il database PDB per verificare l'esistenza di strutture cristallografiche associate alle sequenze in input. Se presenti, la libreria viene popolata utilizzando allineatori strutturali (come SAP o TM-align) invece di allineatori di sequenza, sfruttando il principio che la struttura terziaria è evolutivamente più conservata della sequenza primaria.
+    
+    \item \textbf{R-Coffee:} Una variante specifica per l'allineamento di molecole di RNA non codificante. R-Coffee integra nella libreria informazioni sulla struttura secondaria (predetta o sperimentale), penalizzando l'inserimento di gap che romperebbero i legami idrogeno nelle eliche (stem) dell'RNA, garantendo così la conservazione della funzionalità biologica nel modello finale.
+    
+    \item \textbf{PSI-Coffee:} Ispirato alla logica di PSI-BLAST, questo metodo è progettato per sequenze con scarsa omologia rilevabile. Per ogni sequenza di input, l'algoritmo genera un profilo di omologia cercando sequenze simili nei database pubblici; l'allineamento viene poi guidato da questi profili arricchiti piuttosto che dalle singole sequenze, aumentando notevolmente la sensibilità.
+\end{itemize}
+
+\subsubsection{L'Era della Scalabilità e dell'Integrazione Strutturale Predittiva (2015-2025)}
+Per rispondere al limite della complessità cubica $O(N^3)$ e all'esplosione dei dati genomici, gli sviluppi recenti hanno rivoluzionato l'architettura interna del software.
+
+\begin{itemize}
+    \item \textbf{Regressive T-Coffee:} Questa innovazione algoritmica abbandona l'approccio progressivo monolitico per un metodo "divide et impera". L'algoritmo frammenta il dataset iniziale (anche di 100.000+ sequenze) in sottogruppi più piccoli, li allinea separatamente con l'alta precisione del metodo classico, e infine ricombina i profili risultanti. Ciò riduce la complessità computazionale a livelli quasi lineari $O(N \log N)$, rendendo T-Coffee competitivo con MAFFT e MUSCLE su grandi dataset senza sacrificare eccessivamente l'accuratezza.
+    
+    \item \textbf{Integrazione con AlphaFold (Fold-Coffee):} Con la rivoluzione del Deep Learning nella biologia strutturale, le versioni più recenti hanno integrato il supporto per modelli predittivi. T-Coffee può ora utilizzare le strutture ad alta confidenza generate da AlphaFold2 per guidare l'allineamento tramite la modalità Expresso, estendendo i benefici dell'allineamento strutturale anche a proteine che non sono mai state cristallizzate sperimentalmente.
+    
+    \item \textbf{Riproducibilità e Cloud Computing:} Parallelamente all'algoritmo, l'ecosistema si è evoluto con l'introduzione di framework come \textit{Nextflow}. T-Coffee è stato ottimizzato per l'esecuzione in container (Docker/Singularity), facilitandone l'impiego in pipeline bioinformatiche distribuite su cloud, un requisito essenziale per la moderna genomica su larga scala.
+\end{itemize}

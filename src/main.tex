@@ -54,12 +54,16 @@
 \usepackage{xurl}
 \usepackage[hidelinks]{hyperref}
 
+% --- Bibliografia ---
+\usepackage[style=numeric, sorting=none, backend=biber]{biblatex} 
+\addbibresource{riferimenti.bib}
 
 \title{Allineamento Progressivo nel T-Coffee}
 \author{Ascolese - D'Andrea}
 \date{Anno Accademico 2025/2026}
 
 \begin{document}
+\nocite{*} % Mostra la bibliografia anche se non citata nel testo
 
 \begin{titlepage}
     \centering % Centra orizzontalmente tutto il contenuto
@@ -92,5 +96,8 @@
 
 \appendix
 \include{AppendiceTCoffee}
+
+\newpage
+\printbibliography[title={Bibliografia}, heading=bibintoc]
 
 \end{document}
