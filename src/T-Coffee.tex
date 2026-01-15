@@ -3,6 +3,20 @@
 \noindent Sebbene l'allineamento progressivo classico, esemplificato dalla famiglia di software Clustal, rappresenti un'euristica efficace per ridurre la complessità computazionale dell'allineamento multiplo (MSA), esso soffre intrinsecamente della natura "greedy" (ingorda) dell'algoritmo. \\
 La limitazione principale risiede nell'impossibilità di correggere gli errori commessi nelle prime fasi della costruzione dell'allineamento: una volta inserito un gap, questo viene propagato irreversibilmente. \\
 Per mitigare questo problema senza abbandonare l'efficienza dello schema progressivo, nel 2000 Notredame, Higgins e Heringa hanno introdotto T-Coffee (Tree-based Consistency Objective Function For alignmEnt Evaluation). T-Coffee non abbandona l'architettura progressiva, ma ne rivoluziona la fase di valutazione: invece di basarsi su matrici di sostituzione statiche (come le serie BLOSUM o PAM), l'algoritmo costruisce una funzione obiettivo dinamica basata sul concetto di consistenza.
+Al fine di chiarire il funzionamento dell'algoritmo T-Coffee, introduciamo un \emph{esempio guida}, ispirato a quello presentato nel lavoro originale
+di Notredame et al. (2000).  L'obiettivo è seguire lo stesso insieme di sequenze
+lungo tutte le fasi dell'algoritmo, evidenziando come l'informazione venga progressivamente
+integrata e raffinata secondo una visione top--down.
+
+Si considerino tra sequenze proteiche $S_1$, $S_2$, $S_3$ che condividono 
+un' omologia globale ma presentano regioni localmente divergenti. In un allineamento 
+progressivo classico, eventuali errori introdotti nelle prime fasi ( ad esempio un posizionamento scorretto dei gap) tendono a propagarsi 
+irreversibilmente. T-Coffee affronta questo problema separando concettualmente la
+raccolta dell'evidenza di omologia dalla costruzione dell'allineamento multiplo finale.
+
+Nel seguito del capitolo, questo esempio verrà ripreso in ciascuna fase dell'algoritmo 
+(generazione della libreria primaria, estensione per consinstenza e allineamento progressivo),così da fornire una lettura coerente e unificata del metodo.
+
 
 \subsection{Consistenza Biologica}
 L'idea fondamentale di T-Coffee è che l'allineamento tra due sequenze, $S_A$ e $S_B$, non debba dipendere esclusivamente dal confronto diretto tra i loro residui, ma debba essere informato dal modo in cui entrambe si allineano con tutte le altre sequenze del set. Se il residuo $x$ della sequenza $A$ è allineato con il residuo $z$ della sequenza $C$, e lo stesso residuo $z$ è allineato con il residuo $y$ della sequenza $B$, allora esiste una "evidenza transitoria" che $x$ e $y$ debbano essere allineati tra loro, anche se il confronto diretto $A-B$ (pairwise) non lo suggerisce fortemente. Questa proprietà transitiva è definita consistenza.
@@ -20,6 +34,10 @@ fornita dagli allineamenti pairwise e della sequenze intermediemi
 Il flusso di lavoro di T-Coffee si articola in tre fasi distinte, che precedono e modificano la classica procedura di allineamento progressivo.
 
 \subsubsection{Generazione della Libreria Primaria}
+Riprendendo l’esempio guida introdotto in precedenza, T-Coffee calcola
+gli allineamenti pairwise tra tutte le coppie di sequenze ($S_1$--$S_2$,
+$S_1$--$S_3$, $S_2$--$S_3$), estraendo da ciascuno le coppie di residui
+allineate che costituiranno la libreria primaria di vincoli.
 Invece di calcolare una semplice matrice di distanze, T-Coffee genera una libreria di allineamenti. Per ogni coppia di sequenze, vengono calcolati due tipi di allineamento:
 \begin{itemize}
     \item Allineamento Globale: Solitamente ottenuto tramite l'algoritmo ClustalW (Needleman-Wunsch).
@@ -45,6 +63,10 @@ Questa rappresentazione rende immediato, nelle fasi successive, recuperare il
 supporto di consinstenza per ogni potenziale allineamento tra residui
 
 \subsubsection{Estensione della Libreria}
+Nel contesto dell’esempio guida, l’estensione della libreria consente di
+rafforzare un vincolo tra due residui di $S_1$ e $S_3$ qualora entrambi
+risultino coerentemente allineati a un residuo intermedio di $S_2$,
+anche in assenza di un forte supporto diretto nel confronto pairwise.
 La fase di \emph{library extension} è l'elemento che distingue T-Coffee
 dai metodi progressivi classici. L'idea è rafforzare (o indebolire) il peso
 di un vincolo tra due residui non solo in base al loro allineamento diretto,
@@ -80,6 +102,10 @@ e attenua i vincoli isolati, riducendo la propagazione di errori tipica
 degli approcci progressivi puramente greedy.
 
 \subsubsection{Allineamento Progressivo}
+Una volta costruita la libreria estesa, l’allineamento progressivo delle
+sequenze dell’esempio guida procede seguendo l’albero guida, ma utilizzando
+come funzione di scoring il supporto fornito dai vincoli di consistenza,
+anziché una matrice di sostituzione statica.
 Una volta ottenuta la libreria estesa, T-Coffee procede con lo schema progressivo standard:
 \begin{enumerate}
     \item Calcolo della matrice delle distanze basata sui pesi della libreria.

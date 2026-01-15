@@ -42,10 +42,99 @@ class AlnRow:
 Profile = List[AlnRow]
 
 # -----------------------------
+# FIX 1 Real Needleman-Wunsch with traceback needed
+# -----------------------------
+def Needleman_wunsch_global(x: str, y: str, match: int_1, mismatch: int=-1, gap: int=-1,) -> Tuple[str, str]:
+    """
+    Classic  NW global alignment witch linear gap penalty and traceback.
+    Returns aligned strings (with gaps).
+    """
+    m,n= len(x), len(y)
+
+    #DP score and traceback pointers
+    S=[[0]*(n+1) for _ in range(m+1)]
+    TB=[[""]*(n+1)for _ in range(m+1)]
+
+    #init
+    for i in range(1,m+1):
+        S[i][0]=S[i-1][0]+gap
+        TB[i][0]="U"
+    for j in range(1,n+1):
+        S[0][j]=S[0][j-1]+gap
+        TB[0][j]="L"
+    
+    #fill
+    for i in range(1,m+1):
+        xi=x[i-1]
+        for j in range(1,n+1):
+            yj=y[j-1]
+            s_sub=match if xi==yj else mismatch
+
+            diag=S[i-1][j-1]+s_sub
+            up=S[i-1][j]+gap
+            left=S[i][j-1]+gap
+
+            best=max(diag,up,left)
+            S[i][j]=best 
+
+            #tie-break: diag>up> left (stable and common)
+            if best==diag:
+                TB[i][j]="D"
+            elif best==up:
+                TB[i][j]="U"
+            else:
+                TB[i][j]="L"
+
+    #traceback
+    ai: List[str]=[]
+    aj: List[str]=[]
+    i,j=m,n
+    while i>0 or j>0:
+        if i==0:
+            step="L"
+        elif j==0:
+            step="U"
+        else:
+            step=TB[i][j]
+
+        if step=="D":
+            ai.append(x[i-1])
+            aj.append(y[j-1])
+            i-=1
+            j-=1
+        elif step=="U":
+            ai.append(x[i-1])
+            aj.append("-")
+            i-=1
+        else: #step=="L"
+            ai.append("-")
+            aj.append(y[j-1])
+            j-=1
+    ai.reverse()
+    aj.reverse()
+    return "".join(ai), "".join(aj)
+    
+    def percent_identity(a:str, b:str)->float:
+    matches=0
+    aligned=0
+    for x,y in zip(a,b):
+        if x=="-" or y=="-":
+            continue
+        aligned+=1
+        if x==y:
+            matches+=1
+    return (matches/aligned) if aligned else 0.0
+
+# -----------------------------
 # 1 Primary library (toy)
 # -----------------------------
 
-def build_primary_library(seqs: List[str]) -> Library:
+def build_primary_library(
+    seqs: List[str],
+    nw_match: int=1,
+    nw_mismatch: int=-1,
+    nw_gap: int=-1,
+) -> Library:
     """
     Build a primary library from pairwise alignments.
     For a real T-Coffee, you'd combine global + local sources.
@@ -56,7 +145,7 @@ def build_primary_library(seqs: List[str]) -> Library:
     for i in range(len(seqs)):
         for j in range(i + 1, len(seqs)):
             # TODO: replace with real Needleman-Wunsch traceback returning aligned strings + mapping
-            ai, aj = naive_global_align(seqs[i], seqs[j])
+            ai, aj = needleman_wunsch_global(seqs[i], seqs[j], match=nw_match, mismatch=nw_mismatch, gap=nw_gap)
 
             # weight could be %identity or any confidence score
             w_source = percent_identity(ai, aj)
@@ -75,30 +164,6 @@ def build_primary_library(seqs: List[str]) -> Library:
     return lib
 
 
-def percent_identity(a: str, b: str) -> float:
-    matches = 0
-    aligned = 0
-    for x, y in zip(a, b):
-        if x == "-" or y == "-":
-            continue
-        aligned += 1
-        if x == y:
-            matches += 1
-    return (matches / aligned) if aligned else 0.0
-
-
-def naive_global_align(x: str, y: str) -> Tuple[str, str]:
-    """
-    Placeholder: NOT a real NW. Replace with your NW implementation with traceback.
-    For now, align by padding shorter one (only for scaffolding).
-    """
-    m, n = len(x), len(y)
-    if m < n:
-        return x + "-" * (n - m), y
-    if n < m:
-        return x, y + "-" * (m - n)
-    return x, y
-
 
 # -----------------------------
 # 2 Library extension (consistency)
@@ -107,9 +172,9 @@ def naive_global_align(x: str, y: str) -> Tuple[str, str]:
 
 def extend_library(primary: Library, n_seqs: int, mode: str = "min") -> Library:
     """
-    Compute an extended library w_ext using consistency:
-      w'_{i,a,j,b} = w_{i,a,j,b} + sum_{k!=i,j} sum_c f(w_{i,a,k,c}, w_{k,c,j,b})
-    Here we implement a sparse version: only propagate through existing keys.
+    Extended library via a simple consistency propagation:
+      w' = w + sum over 2-step paths (r -> mid -> t) of f(w_rm, w_mt)
+    Sparse: propagate only through existing keys.
     """
     ext = dict(primary)  # start from direct weights
 
@@ -311,4 +376,166 @@ def align_profiles_with_library(
             b_col += 1
 
     return merged
+
+# -----------------------------
+# FIX 2 Driver: guide tree + progressive alignment
+# -----------------------------   
+def make_singleton_profiles(seqs: List[str])-> Dict[int, Profile]:
+    """
+    Each sequence becomes a -row profile.
+    """
+    profs: Dict[int, Profile]={}
+    for sid, s in enumerate(seqs):
+        profs[sid]=[AlnRow(seq_id=sid, aligned=s, col_to_pos=list(range(len(s))))]
+    return profs
+
+    def pairwise_distance_matrix(
+        seqs: List[str],
+        match: int=1,
+        mismatch: int=-1,
+        gap: int=-1,
+    )-> List[List[float]]:
+        """
+        Distance= 1- percent_identity(NW(x,y))
+        """
+        n=len(seqs)
+        D=[[0.0]*n for _ in range(n)]
+        for i in range(n):
+            for j in range(i+1,n):
+                ai,aj=needleman_wunsch_global(seqs[i],seqs[j], match,mismatch,gap)
+                pid=percent_identity(ai,aj)
+                dist=1.0 - pid
+                D[i][j]= D[j][i]=dist
+    return D
+
+    def upgma_marges(D: List[List[float]])->List[Tuple[int,int]]:
+    """
+    Very small UPGMA that returns a list of merges(cluster_id_a, clusyter_id_b).
+    Cluster ids start as 0..n-1; new clusters get increasing ids.
+    """
+    n=len(D)
+    active={i for i in range(n)}
+    #cluster members for average linkage
+    members: Dict[int, List[int]]={i: [i] for i in range(n)}
+    #distance between clusters, computed on the fly by average of origin distances
+    next_id=n
+    merges: List[Tuple[int,int]]=[]
+
+    def avg_dist(ca: int, cb: int)->float:
+        A=members[ca]
+        B=members[cb]
+        tot=0.0
+        cnt=0
+        for i in A:
+            for j in B:
+                tot+=D[i][j]
+                cnt+=1
+        return tot/cnt if cnt>0 else 0.0
+
+    while len(active)>1:
+        #find closest pair
+        best_pair=None
+        best_val=1e18
+        act_list=sorted(active)
+        for idx_a in range(len(act_list)):
+            for idx_b in range(idx_a +1,len(act_list)):
+                ca=act_list[idx_a]
+                cb=act_list[idx_b]
+                v=avg_dist(ca,cb)
+                if v<best_val:
+                    best_val=v
+                    best_pair=(ca,cb)
+
+        
+        assert best_pair is not None
+        ca,cb= best_pair
+        merges.append((ca,cb))
+
+        #merge clusters
+        newc=next_id
+        next_id+=1
+        members[newc]=members[ca]+members[cb]
+        active.remove(ca)
+        active.remove(cb)
+        active.add(newc)
+    
+    return merges
+
+    def progressive_tcoffee_toy(
+        seqs: List[str],
+        gap_open: float=-2.0,
+        gap_ext: float=-0.5,
+        nw_match: int=1,
+        nw_mismatch: int=-1,
+        nw_gap: int=-1,
+        ext_mode: str="min",
+    )-> Profile:
+    """
+    End to-end T-Coffee toy simulator:
+        -primary library from NW
+        -extend library for consistency
+        -guide tree UPGMA on 1-pid distances
+        -progressive profile-profile alignemnt using library-based column
+    """
+    n=len(seqs)
+    if n==0:
+        return []
+    if n==1:
+        return [AlnRow(0, seqs[0], list(range(len(seqs[0]))))]
+    #1 primary library
+    primary=build_primary_library(seqs, nw_match, nw_mismatch, mw_gap)
+    lib_ext= extend_library(primary, n, mode=ext_mode)
+
+    #Guide tree
+    D= pairwise_distance_matrix(seqs, nw_match, nw_mismatch, nw_gap)
+    merges= upgma_marges(D)
+
+    #start profiles
+    profiles=make_singleton_profiles(seqs)
+
+    #Progressive merges following UPGMA order
+    next_cluster_id=len(seqs)
+    for ca, cb in mergees:
+        profA=profiles[ca]
+        profB=profiles[cb]
+        
+        merged= align_profiles_with_library(
+            profA,profB, lib_ext, gap_open=gap_open, gap_ext=gap_ext
+        )
+
+        profiles[next_cluster_id]= merged
+        next_cluster_id+=1
+
+    #Only one profile left: final MSA
+    final_profile= next((iter(profiles.values())))
+    #Sort rows by original seq_id for nice output
+    final_profile.sort(key=lambda row: row.seq_id)
+    return final_profile
+
+
+    def print_profile(profile: Profile, names: Optional[List[str]]=None)-> None:
+    
+       for row in profile:
+            label=f"S{row.seq_id}"
+            if names and row.seq_id < len(names):
+                label=names[row.seq_id]
+
+            print(f">{label:>8}\n{row.aligned}")
+    
+    def run_demo():
+        seqs=[
+        "ACGTGCA",
+        "ACGTCGA",
+        "ACGAGCA",
+        "ACGTGGA",
+        ]
+        names=[f"Seq{i+1}" for i in range(len(seqs))]
+        msa= progressive_tcoffee_toy(seqs)
+        print ("MSA finale T-COffee toY:")
+        print_profile(msa, name=names)
+
+if __name__=="__main__":
+
+    run_demo()
+
 \end{lstlisting}

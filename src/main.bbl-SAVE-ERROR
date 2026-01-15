@@ -1,0 +1,276 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{feng1987progressive}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=68b751dfce32979ff5c07b97e1331b0c}{%
+           family={Feng},
+           familyi={F\bibinitperiod},
+           given={Da-Fei},
+           giveni={D\bibinithyphendelim F\bibinitperiod}}}%
+        {{hash=600bc73cadbd1262dd9b8f38bb731290}{%
+           family={Doolittle},
+           familyi={D\bibinitperiod},
+           given={Russell\bibnamedelima F.},
+           giveni={R\bibinitperiod\bibinitdelim F\bibinitperiod}}}%
+      }
+      \strng{namehash}{a257763e26feed277abaa33192fd5ca4}
+      \strng{fullhash}{a257763e26feed277abaa33192fd5ca4}
+      \strng{fullhashraw}{a257763e26feed277abaa33192fd5ca4}
+      \strng{bibnamehash}{a257763e26feed277abaa33192fd5ca4}
+      \strng{authorbibnamehash}{a257763e26feed277abaa33192fd5ca4}
+      \strng{authornamehash}{a257763e26feed277abaa33192fd5ca4}
+      \strng{authorfullhash}{a257763e26feed277abaa33192fd5ca4}
+      \strng{authorfullhashraw}{a257763e26feed277abaa33192fd5ca4}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Molecular Evolution}
+      \field{number}{4}
+      \field{title}{Progressive sequence alignment as a prerequisite to correct phylogenetic trees}
+      \field{volume}{25}
+      \field{year}{1987}
+      \true{nocite}
+      \field{pages}{351\bibrangedash 360}
+      \range{pages}{10}
+    \endentry
+    \entry{thompson1994clustalw}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=a6c2a94d6e31e9f6ac9a63431fa09187}{%
+           family={Thompson},
+           familyi={T\bibinitperiod},
+           given={Julie\bibnamedelima D.},
+           giveni={J\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+        {{hash=c4795a69b442dd465d40262b228e8a01}{%
+           family={Higgins},
+           familyi={H\bibinitperiod},
+           given={Desmond\bibnamedelima G.},
+           giveni={D\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+        {{hash=d411edc8f5444f607e9ee094ab13926e}{%
+           family={Gibson},
+           familyi={G\bibinitperiod},
+           given={Toby\bibnamedelima J.},
+           giveni={T\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \strng{namehash}{f39523ea8185672ccbc657874cf649ad}
+      \strng{fullhash}{f39523ea8185672ccbc657874cf649ad}
+      \strng{fullhashraw}{f39523ea8185672ccbc657874cf649ad}
+      \strng{bibnamehash}{f39523ea8185672ccbc657874cf649ad}
+      \strng{authorbibnamehash}{f39523ea8185672ccbc657874cf649ad}
+      \strng{authornamehash}{f39523ea8185672ccbc657874cf649ad}
+      \strng{authorfullhash}{f39523ea8185672ccbc657874cf649ad}
+      \strng{authorfullhashraw}{f39523ea8185672ccbc657874cf649ad}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nucleic Acids Research}
+      \field{number}{22}
+      \field{title}{{CLUSTAL W}: improving the sensitivity of progressive multiple sequence alignment through sequence weighting, position-specific gap penalties and weight matrix choice}
+      \field{volume}{22}
+      \field{year}{1994}
+      \true{nocite}
+      \field{pages}{4673\bibrangedash 4680}
+      \range{pages}{8}
+    \endentry
+    \entry{notredame2000tcoffee}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=9575abec5abbfbf3a0c003c8e9dc0dfc}{%
+           family={Notredame},
+           familyi={N\bibinitperiod},
+           given={Cedric},
+           giveni={C\bibinitperiod}}}%
+        {{hash=c4795a69b442dd465d40262b228e8a01}{%
+           family={Higgins},
+           familyi={H\bibinitperiod},
+           given={Desmond\bibnamedelima G.},
+           giveni={D\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+        {{hash=a0f707f5c85369ff12d6de8401c06be8}{%
+           family={Heringa},
+           familyi={H\bibinitperiod},
+           given={Jaap},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{51bf9a5a5eeb204d1ffb65d983885a1a}
+      \strng{fullhash}{51bf9a5a5eeb204d1ffb65d983885a1a}
+      \strng{fullhashraw}{51bf9a5a5eeb204d1ffb65d983885a1a}
+      \strng{bibnamehash}{51bf9a5a5eeb204d1ffb65d983885a1a}
+      \strng{authorbibnamehash}{51bf9a5a5eeb204d1ffb65d983885a1a}
+      \strng{authornamehash}{51bf9a5a5eeb204d1ffb65d983885a1a}
+      \strng{authorfullhash}{51bf9a5a5eeb204d1ffb65d983885a1a}
+      \strng{authorfullhashraw}{51bf9a5a5eeb204d1ffb65d983885a1a}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Molecular Biology}
+      \field{number}{1}
+      \field{title}{{T-Coffee}: A novel method for fast and accurate multiple sequence alignment}
+      \field{volume}{302}
+      \field{year}{2000}
+      \true{nocite}
+      \field{pages}{205\bibrangedash 217}
+      \range{pages}{13}
+    \endentry
+    \entry{notredame2002recent}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=9575abec5abbfbf3a0c003c8e9dc0dfc}{%
+           family={Notredame},
+           familyi={N\bibinitperiod},
+           given={Cedric},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{9575abec5abbfbf3a0c003c8e9dc0dfc}
+      \strng{fullhash}{9575abec5abbfbf3a0c003c8e9dc0dfc}
+      \strng{fullhashraw}{9575abec5abbfbf3a0c003c8e9dc0dfc}
+      \strng{bibnamehash}{9575abec5abbfbf3a0c003c8e9dc0dfc}
+      \strng{authorbibnamehash}{9575abec5abbfbf3a0c003c8e9dc0dfc}
+      \strng{authornamehash}{9575abec5abbfbf3a0c003c8e9dc0dfc}
+      \strng{authorfullhash}{9575abec5abbfbf3a0c003c8e9dc0dfc}
+      \strng{authorfullhashraw}{9575abec5abbfbf3a0c003c8e9dc0dfc}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Pharmacogenomics}
+      \field{number}{1}
+      \field{title}{Recent progress in multiple sequence alignment: a survey}
+      \field{volume}{3}
+      \field{year}{2002}
+      \true{nocite}
+      \field{pages}{131\bibrangedash 144}
+      \range{pages}{14}
+    \endentry
+    \entry{saitou1987neighbor}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=d209c6887fb04e6d5dd3db63253f1b7f}{%
+           family={Saitou},
+           familyi={S\bibinitperiod},
+           given={Naruya},
+           giveni={N\bibinitperiod}}}%
+        {{hash=f7e54938018be38227393edcb9566fca}{%
+           family={Nei},
+           familyi={N\bibinitperiod},
+           given={Masatoshi},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{b66d3cee519c6d1848824865d97a985a}
+      \strng{fullhash}{b66d3cee519c6d1848824865d97a985a}
+      \strng{fullhashraw}{b66d3cee519c6d1848824865d97a985a}
+      \strng{bibnamehash}{b66d3cee519c6d1848824865d97a985a}
+      \strng{authorbibnamehash}{b66d3cee519c6d1848824865d97a985a}
+      \strng{authornamehash}{b66d3cee519c6d1848824865d97a985a}
+      \strng{authorfullhash}{b66d3cee519c6d1848824865d97a985a}
+      \strng{authorfullhashraw}{b66d3cee519c6d1848824865d97a985a}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Molecular Biology and Evolution}
+      \field{number}{4}
+      \field{title}{The neighbor-joining method: a new method for reconstructing phylogenetic trees}
+      \field{volume}{4}
+      \field{year}{1987}
+      \true{nocite}
+      \field{pages}{406\bibrangedash 425}
+      \range{pages}{20}
+    \endentry
+    \entry{needleman1970general}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=51aa8aae5dbbb5be7b45030d1d1f4c55}{%
+           family={Needleman},
+           familyi={N\bibinitperiod},
+           given={Saul\bibnamedelima B.},
+           giveni={S\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=17a8ad5574620bef562ad96adac8d254}{%
+           family={Wunsch},
+           familyi={W\bibinitperiod},
+           given={Christian\bibnamedelima D.},
+           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+      }
+      \strng{namehash}{b4f528fa64d350ccf1a3ce4cf7527e42}
+      \strng{fullhash}{b4f528fa64d350ccf1a3ce4cf7527e42}
+      \strng{fullhashraw}{b4f528fa64d350ccf1a3ce4cf7527e42}
+      \strng{bibnamehash}{b4f528fa64d350ccf1a3ce4cf7527e42}
+      \strng{authorbibnamehash}{b4f528fa64d350ccf1a3ce4cf7527e42}
+      \strng{authornamehash}{b4f528fa64d350ccf1a3ce4cf7527e42}
+      \strng{authorfullhash}{b4f528fa64d350ccf1a3ce4cf7527e42}
+      \strng{authorfullhashraw}{b4f528fa64d350ccf1a3ce4cf7527e42}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Molecular Biology}
+      \field{number}{3}
+      \field{title}{A general method applicable to the search for similarities in the amino acid sequence of two proteins}
+      \field{volume}{48}
+      \field{year}{1970}
+      \true{nocite}
+      \field{pages}{443\bibrangedash 453}
+      \range{pages}{11}
+    \endentry
+    \entry{durbin1998biological}{book}{}{}
+      \name{author}{4}{}{%
+        {{hash=517afe729b2eb59735ba80628d943bb0}{%
+           family={Durbin},
+           familyi={D\bibinitperiod},
+           given={Richard},
+           giveni={R\bibinitperiod}}}%
+        {{hash=5947569a3edff4e41b4b23548dc4b505}{%
+           family={Eddy},
+           familyi={E\bibinitperiod},
+           given={Sean\bibnamedelima R.},
+           giveni={S\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=6403d5c11a92c83a009c3def1b494036}{%
+           family={Krogh},
+           familyi={K\bibinitperiod},
+           given={Anders},
+           giveni={A\bibinitperiod}}}%
+        {{hash=68624c959c638f6b14013aa431a3438e}{%
+           family={Mitchison},
+           familyi={M\bibinitperiod},
+           given={Graeme},
+           giveni={G\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Cambridge University Press}%
+      }
+      \strng{namehash}{3a4d3e2be9b45e60b07f0e4f9ae771b1}
+      \strng{fullhash}{51229989a7ffdca30e83c078eee0b020}
+      \strng{fullhashraw}{51229989a7ffdca30e83c078eee0b020}
+      \strng{bibnamehash}{3a4d3e2be9b45e60b07f0e4f9ae771b1}
+      \strng{authorbibnamehash}{3a4d3e2be9b45e60b07f0e4f9ae771b1}
+      \strng{authornamehash}{3a4d3e2be9b45e60b07f0e4f9ae771b1}
+      \strng{authorfullhash}{51229989a7ffdca30e83c078eee0b020}
+      \strng{authorfullhashraw}{51229989a7ffdca30e83c078eee0b020}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Biological sequence analysis: probabilistic models of proteins and nucleic acids}
+      \field{year}{1998}
+      \true{nocite}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
