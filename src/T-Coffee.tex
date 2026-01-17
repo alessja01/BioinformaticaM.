@@ -11,12 +11,23 @@ integrata e raffinata secondo una visione top--down.
 Si considerino tra sequenze proteiche $S_1$, $S_2$, $S_3$ che condividono 
 un' omologia globale ma presentano regioni localmente divergenti. In un allineamento 
 progressivo classico, eventuali errori introdotti nelle prime fasi ( ad esempio un posizionamento scorretto dei gap) tendono a propagarsi 
-irreversibilmente. T-Coffee affronta questo problema separando concettualmente la
+irreversibilmente. T-Coffee ~\cite{notredame2000tcoffee} affronta questo problema separando concettualmente la
 raccolta dell'evidenza di omologia dalla costruzione dell'allineamento multiplo finale.
 
 Nel seguito del capitolo, questo esempio verrà ripreso in ciascuna fase dell'algoritmo 
 (generazione della libreria primaria, estensione per consinstenza e allineamento progressivo),così da fornire una lettura coerente e unificata del metodo.
 
+\begin{figure}
+\centering
+\includegraphics[width=0.85\textwidth]{../img/tc.png}
+\caption{Pipeline concettuale dell’algoritmo T-Coffee.
+Gli allineamenti pairwise globali contribuiscono alla costruzione
+della libreria primaria tramite un’aggregazione pesata dei segnali.
+La libreria viene successivamente estesa applicando il principio di
+consistenza e utilizzata come funzione di scoring durante
+l’allineamento progressivo che produce l’allineamento multiplo finale.}
+\label{fig:tcoffee_pipeline}
+\end{figure}
 
 \subsection{Consistenza Biologica}
 L'idea fondamentale di T-Coffee è che l'allineamento tra due sequenze, $S_A$ e $S_B$, non debba dipendere esclusivamente dal confronto diretto tra i loro residui, ma debba essere informato dal modo in cui entrambe si allineano con tutte le altre sequenze del set. Se il residuo $x$ della sequenza $A$ è allineato con il residuo $z$ della sequenza $C$, e lo stesso residuo $z$ è allineato con il residuo $y$ della sequenza $B$, allora esiste una "evidenza transitoria" che $x$ e $y$ debbano essere allineati tra loro, anche se il confronto diretto $A-B$ (pairwise) non lo suggerisce fortemente. Questa proprietà transitiva è definita consistenza.
@@ -159,7 +170,7 @@ A partire dagli allineamenti pairwise iniziali, viene calcolata una matrice
 di distanze tra le sequenze, basata ad esempio sulla percentuale d'identità 
 o su misure derivate dai pesi della libreria. Su questa matrice 
 viene quindi costruito un albero guida mediante algoritmi di clustering gerarchico
-quali UPGMA o Neighbor-Joining.
+quali UPGMA o Neighbor-Joining ~\cite{saitou1987neighbor}.
 L'allineamento multiplo procede seguendo la topologia dell'albero: le 
 sequenze più vicine vengono allineate per prime, producendo profili
 intermedi che vengono successivamente allineati tra lodo. In ogni passo,

@@ -131,6 +131,211 @@
       \field{pages}{205\bibrangedash 217}
       \range{pages}{13}
     \endentry
+    \entry{katoh2002mafft}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=e15a71da898925c9e569917155439a71}{%
+           family={Katoh},
+           familyi={K\bibinitperiod},
+           given={Kazutaka},
+           giveni={K\bibinitperiod}}}%
+        {{hash=be0239e8ffe94e884a37c51ff4203db1}{%
+           family={Misawa},
+           familyi={M\bibinitperiod},
+           given={Kazuharu},
+           giveni={K\bibinitperiod}}}%
+        {{hash=e83cb7cc3bdf418fc6b4afc6008dd954}{%
+           family={Kuma},
+           familyi={K\bibinitperiod},
+           given={Kei-Ichi},
+           giveni={K\bibinithyphendelim I\bibinitperiod}}}%
+        {{hash=03fb6c99b240d4c86d9428b592823123}{%
+           family={Miyata},
+           familyi={M\bibinitperiod},
+           given={Takashi},
+           giveni={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{5bc0d6ad8751c3350b786c6bfe7e3b0e}
+      \strng{fullhash}{e00076762cc171ee15e1943d888fba53}
+      \strng{fullhashraw}{e00076762cc171ee15e1943d888fba53}
+      \strng{bibnamehash}{5bc0d6ad8751c3350b786c6bfe7e3b0e}
+      \strng{authorbibnamehash}{5bc0d6ad8751c3350b786c6bfe7e3b0e}
+      \strng{authornamehash}{5bc0d6ad8751c3350b786c6bfe7e3b0e}
+      \strng{authorfullhash}{e00076762cc171ee15e1943d888fba53}
+      \strng{authorfullhashraw}{e00076762cc171ee15e1943d888fba53}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nucleic Acids Research}
+      \field{number}{14}
+      \field{title}{MAFFT: a novel method for rapid multiple sequence alignment based on fast Fourier transform}
+      \field{volume}{30}
+      \field{year}{2002}
+      \true{nocite}
+      \field{pages}{3059\bibrangedash 3066}
+      \range{pages}{8}
+    \endentry
+    \entry{edgar2004muscle}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=b9fba786a7677e6255726b6d058a7d16}{%
+           family={Edgar},
+           familyi={E\bibinitperiod},
+           given={Robert\bibnamedelima C.},
+           giveni={R\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+      }
+      \strng{namehash}{b9fba786a7677e6255726b6d058a7d16}
+      \strng{fullhash}{b9fba786a7677e6255726b6d058a7d16}
+      \strng{fullhashraw}{b9fba786a7677e6255726b6d058a7d16}
+      \strng{bibnamehash}{b9fba786a7677e6255726b6d058a7d16}
+      \strng{authorbibnamehash}{b9fba786a7677e6255726b6d058a7d16}
+      \strng{authornamehash}{b9fba786a7677e6255726b6d058a7d16}
+      \strng{authorfullhash}{b9fba786a7677e6255726b6d058a7d16}
+      \strng{authorfullhashraw}{b9fba786a7677e6255726b6d058a7d16}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nucleic Acids Research}
+      \field{number}{5}
+      \field{title}{MUSCLE: multiple sequence alignment with high accuracy and high throughput}
+      \field{volume}{32}
+      \field{year}{2004}
+      \true{nocite}
+      \field{pages}{1792\bibrangedash 1797}
+      \range{pages}{6}
+    \endentry
+    \entry{thompson1999ba}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=a6c2a94d6e31e9f6ac9a63431fa09187}{%
+           family={Thompson},
+           familyi={T\bibinitperiod},
+           given={Julie\bibnamedelima D.},
+           giveni={J\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+        {{hash=fe3c1d22a50be16d726df41934d5ae64}{%
+           family={Plewniak},
+           familyi={P\bibinitperiod},
+           given={Frederic},
+           giveni={F\bibinitperiod}}}%
+        {{hash=8daf932260ae17475d99a5d79c1d0a26}{%
+           family={Poch},
+           familyi={P\bibinitperiod},
+           given={Olivier},
+           giveni={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{d68c3dfef99672de7494a6d0e9abb0d2}
+      \strng{fullhash}{d68c3dfef99672de7494a6d0e9abb0d2}
+      \strng{fullhashraw}{d68c3dfef99672de7494a6d0e9abb0d2}
+      \strng{bibnamehash}{d68c3dfef99672de7494a6d0e9abb0d2}
+      \strng{authorbibnamehash}{d68c3dfef99672de7494a6d0e9abb0d2}
+      \strng{authornamehash}{d68c3dfef99672de7494a6d0e9abb0d2}
+      \strng{authorfullhash}{d68c3dfef99672de7494a6d0e9abb0d2}
+      \strng{authorfullhashraw}{d68c3dfef99672de7494a6d0e9abb0d2}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nucleic Acids Research}
+      \field{number}{13}
+      \field{title}{A comprehensive comparison of multiple sequence alignment programs}
+      \field{volume}{27}
+      \field{year}{1999}
+      \true{nocite}
+      \field{pages}{2682\bibrangedash 2690}
+      \range{pages}{9}
+    \endentry
+    \entry{thompson2005balibase}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=a6c2a94d6e31e9f6ac9a63431fa09187}{%
+           family={Thompson},
+           familyi={T\bibinitperiod},
+           given={Julie\bibnamedelima D.},
+           giveni={J\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+        {{hash=ba04faa0554931dd6696a212e2793498}{%
+           family={Koehl},
+           familyi={K\bibinitperiod},
+           given={Patrice},
+           giveni={P\bibinitperiod}}}%
+        {{hash=e8b16db068abf4c87e8a7b365410e257}{%
+           family={Ripp},
+           familyi={R\bibinitperiod},
+           given={Romain},
+           giveni={R\bibinitperiod}}}%
+        {{hash=8daf932260ae17475d99a5d79c1d0a26}{%
+           family={Poch},
+           familyi={P\bibinitperiod},
+           given={Olivier},
+           giveni={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{d0dff8a10ae6c4af73798d250165b867}
+      \strng{fullhash}{a398c66c1e630027870ea4fdd19a99a8}
+      \strng{fullhashraw}{a398c66c1e630027870ea4fdd19a99a8}
+      \strng{bibnamehash}{d0dff8a10ae6c4af73798d250165b867}
+      \strng{authorbibnamehash}{d0dff8a10ae6c4af73798d250165b867}
+      \strng{authornamehash}{d0dff8a10ae6c4af73798d250165b867}
+      \strng{authorfullhash}{a398c66c1e630027870ea4fdd19a99a8}
+      \strng{authorfullhashraw}{a398c66c1e630027870ea4fdd19a99a8}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proteins}
+      \field{number}{1}
+      \field{title}{BAliBASE 3.0: latest developments of the multiple sequence alignment benchmark}
+      \field{volume}{61}
+      \field{year}{2005}
+      \true{nocite}
+      \field{pages}{127\bibrangedash 136}
+      \range{pages}{10}
+    \endentry
+    \entry{krogh1994hmm}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=6403d5c11a92c83a009c3def1b494036}{%
+           family={Krogh},
+           familyi={K\bibinitperiod},
+           given={Anders},
+           giveni={A\bibinitperiod}}}%
+        {{hash=165a5da0696c74de50a07a9ec22071a4}{%
+           family={Brown},
+           familyi={B\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=b55362019b2c8f78398c79a523a745ec}{%
+           family={Mian},
+           familyi={M\bibinitperiod},
+           given={I.\bibnamedelimi Saira},
+           giveni={I\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=f9347e23fd8cd29ae3fba1d88b90a4a7}{%
+           family={Sjolander},
+           familyi={S\bibinitperiod},
+           given={Kimmen},
+           giveni={K\bibinitperiod}}}%
+        {{hash=b2ab6c3825f7511e8096e515df23c7e7}{%
+           family={Haussler},
+           familyi={H\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{ec2adf975ba32c05b3133887fc060398}
+      \strng{fullhash}{930236c23acebf179847e6d6795bacaf}
+      \strng{fullhashraw}{930236c23acebf179847e6d6795bacaf}
+      \strng{bibnamehash}{ec2adf975ba32c05b3133887fc060398}
+      \strng{authorbibnamehash}{ec2adf975ba32c05b3133887fc060398}
+      \strng{authornamehash}{ec2adf975ba32c05b3133887fc060398}
+      \strng{authorfullhash}{930236c23acebf179847e6d6795bacaf}
+      \strng{authorfullhashraw}{930236c23acebf179847e6d6795bacaf}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Molecular Biology}
+      \field{number}{5}
+      \field{title}{Hidden Markov models in computational biology}
+      \field{volume}{235}
+      \field{year}{1994}
+      \true{nocite}
+      \field{pages}{1501\bibrangedash 1531}
+      \range{pages}{31}
+    \endentry
     \entry{notredame2002recent}{article}{}{}
       \name{author}{1}{}{%
         {{hash=9575abec5abbfbf3a0c003c8e9dc0dfc}{%
@@ -147,8 +352,8 @@
       \strng{authornamehash}{9575abec5abbfbf3a0c003c8e9dc0dfc}
       \strng{authorfullhash}{9575abec5abbfbf3a0c003c8e9dc0dfc}
       \strng{authorfullhashraw}{9575abec5abbfbf3a0c003c8e9dc0dfc}
-      \field{sortinit}{5}
-      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Pharmacogenomics}
@@ -181,8 +386,8 @@
       \strng{authornamehash}{b66d3cee519c6d1848824865d97a985a}
       \strng{authorfullhash}{b66d3cee519c6d1848824865d97a985a}
       \strng{authorfullhashraw}{b66d3cee519c6d1848824865d97a985a}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Molecular Biology and Evolution}
@@ -215,8 +420,8 @@
       \strng{authornamehash}{b4f528fa64d350ccf1a3ce4cf7527e42}
       \strng{authorfullhash}{b4f528fa64d350ccf1a3ce4cf7527e42}
       \strng{authorfullhashraw}{b4f528fa64d350ccf1a3ce4cf7527e42}
-      \field{sortinit}{7}
-      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Journal of Molecular Biology}
@@ -262,12 +467,103 @@
       \strng{authornamehash}{3a4d3e2be9b45e60b07f0e4f9ae771b1}
       \strng{authorfullhash}{51229989a7ffdca30e83c078eee0b020}
       \strng{authorfullhashraw}{51229989a7ffdca30e83c078eee0b020}
-      \field{sortinit}{8}
-      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{title}{Biological sequence analysis: probabilistic models of proteins and nucleic acids}
       \field{year}{1998}
+      \true{nocite}
+    \endentry
+    \entry{mount2004bioinformatics}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=54341e719183e4c1bc26cf9e6099b701}{%
+           family={Mount},
+           familyi={M\bibinitperiod},
+           given={David\bibnamedelima W.},
+           giveni={D\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Cold Spring Harbor Laboratory Press}%
+      }
+      \strng{namehash}{54341e719183e4c1bc26cf9e6099b701}
+      \strng{fullhash}{54341e719183e4c1bc26cf9e6099b701}
+      \strng{fullhashraw}{54341e719183e4c1bc26cf9e6099b701}
+      \strng{bibnamehash}{54341e719183e4c1bc26cf9e6099b701}
+      \strng{authorbibnamehash}{54341e719183e4c1bc26cf9e6099b701}
+      \strng{authornamehash}{54341e719183e4c1bc26cf9e6099b701}
+      \strng{authorfullhash}{54341e719183e4c1bc26cf9e6099b701}
+      \strng{authorfullhashraw}{54341e719183e4c1bc26cf9e6099b701}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Bioinformatics: sequence and genome analysis}
+      \field{year}{2004}
+      \true{nocite}
+    \endentry
+    \entry{zvelebil2008understanding}{book}{}{}
+      \name{author}{2}{}{%
+        {{hash=c3dc8c12861cfc2613bf9fa9d34dd76f}{%
+           family={Zvelebil},
+           familyi={Z\bibinitperiod},
+           given={Marketa\bibnamedelima J.},
+           giveni={M\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=1882a5f899a5c166299dc6a26c035069}{%
+           family={Baum},
+           familyi={B\bibinitperiod},
+           given={Jeremy\bibnamedelima O.},
+           giveni={J\bibinitperiod\bibinitdelim O\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Garland Science}%
+      }
+      \strng{namehash}{1f938fd6a929d3c15934e7cc84eae486}
+      \strng{fullhash}{1f938fd6a929d3c15934e7cc84eae486}
+      \strng{fullhashraw}{1f938fd6a929d3c15934e7cc84eae486}
+      \strng{bibnamehash}{1f938fd6a929d3c15934e7cc84eae486}
+      \strng{authorbibnamehash}{1f938fd6a929d3c15934e7cc84eae486}
+      \strng{authornamehash}{1f938fd6a929d3c15934e7cc84eae486}
+      \strng{authorfullhash}{1f938fd6a929d3c15934e7cc84eae486}
+      \strng{authorfullhashraw}{1f938fd6a929d3c15934e7cc84eae486}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Understanding Bioinformatics}
+      \field{year}{2008}
+      \true{nocite}
+    \endentry
+    \entry{pevzner2014bioinformatics}{book}{}{}
+      \name{author}{2}{}{%
+        {{hash=84ab1c0a62cd75beb152b941a81de6e0}{%
+           family={Pevzner},
+           familyi={P\bibinitperiod},
+           given={Pavel},
+           giveni={P\bibinitperiod}}}%
+        {{hash=b04cf4cf641593f0477c9602c2a8fc97}{%
+           family={Compeau},
+           familyi={C\bibinitperiod},
+           given={Phillip},
+           giveni={P\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Active Learning Publishers}%
+      }
+      \strng{namehash}{fa5acb4383faa7f73d57c3acca213014}
+      \strng{fullhash}{fa5acb4383faa7f73d57c3acca213014}
+      \strng{fullhashraw}{fa5acb4383faa7f73d57c3acca213014}
+      \strng{bibnamehash}{fa5acb4383faa7f73d57c3acca213014}
+      \strng{authorbibnamehash}{fa5acb4383faa7f73d57c3acca213014}
+      \strng{authornamehash}{fa5acb4383faa7f73d57c3acca213014}
+      \strng{authorfullhash}{fa5acb4383faa7f73d57c3acca213014}
+      \strng{authorfullhashraw}{fa5acb4383faa7f73d57c3acca213014}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Bioinformatics Algorithms: An Active Learning Approach}
+      \field{year}{2014}
       \true{nocite}
     \endentry
   \enddatalist
